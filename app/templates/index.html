@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if current_user.is_anonymous %}
+    <div class="jumbotron">
+        <h1>Enhance your GroupMe chats!</h1>
+        <div class="button-row">
+            <a class="button" href="{{ url_for('about') }}">About</a>
+            <a class="button" href="{{ url_for('create_bot') }}">Create bot</a>
+            <a class="button" href="{{ url_for('login') }}">Browse bots</a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% include '_bot_list.html' %}
+{% endblock %}

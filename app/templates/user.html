@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="profile">
+   <img class="avatar" src="{{ user.avatar_url() }}" alt="Avatar of {{ user.username }}">
+    <div class="details">
+        <h1>{{ user.name }}</h1>
+        {% if user == current_user %}
+        <p><a href="https://web.groupme.com/profile">Edit your profile</a></p>
+        {% endif %}
+    </div>
+</section>
+{% include '_bot_list.html' %}
+{% endblock %}

@@ -1,0 +1,23 @@
+<div class="bot">
+    <div class="row">
+        <div>
+            <a href="{{ url_for('bot', slug=bot.slug) }}">
+                <img src="{{ bot.avatar_url or '/static/images/unknown.png' }}" alt="{{ bot.name }} bot avatar" class="avatar">
+            </a>
+        </div>
+        <div>
+            <h4><a href="{{ url_for('bot', slug=bot.slug) }}">{{ bot.name }}</a></h4>
+            {% include "_population.html" %}
+            {% include "_status.html" %}
+            <div class="buton-row">
+                <a class="button" href="{{ url_for('manager', slug=bot.slug) }}">Add</a>
+                <a class="button" href="{{ url_for('bot', slug=bot.slug) }}">View</a>
+            </div>
+        </div>
+    </div>
+    <p>{{ bot.description|truncate(100, True) }}</p>
+    {% set owner = bot.owner %}
+    {% if owner == current_user %}
+    <p><a href="{{ url_for('edit_bot', slug=bot.slug) }}">Edit</a></p>
+    {% endif %}
+</div>
