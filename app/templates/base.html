@@ -5,7 +5,7 @@
         {% if title %}
         <title>{{ title }} - Comethru</title>
         {% else %}
-        <title>MeBots for GroupMe</title>
+        <title>Comethru</title>
         {% endif %}
         <meta name="viewport" content="width=device-width">
         <meta name="theme-color" content="#00aff0">
@@ -19,22 +19,9 @@
     <body>
         <header>
             <nav>
-                <img src="/static/images/logo/icon-plain.png" alt="MeBots logo" id="logo"><h2 id="logo-text"><a href="{{ url_for('index') }}">MeBots</a></h2>
+                <img src="/static/images/logo/icon-plain.png" alt="MeBots logo" id="logo"><h2 id="logo-text"><a href="{{ url_for('index') }}">Comethru</a></h2>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Home</a></li>
-                    <li><a href="{{ url_for('about') }}">About</a></li>
-                    <li><a href="{{ url_for('documentation') }}">Documentation</a></li>
-                    <li><a href="{{ url_for('create_bot') }}">Create Bot</a></li>
-                    {% if current_user.is_anonymous %}
-                    {% else %}
-                    <li><a href="{{ url_for('user', user_id=current_user.id) }}">My Bots</a></li>
-                    {% endif %}
-
-                    {% if current_user.is_anonymous %}
-                    <li><a href="{{ url_for('login') }}" class="session">Log in with GroupMe</a></li>
-                    {% else %}
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    {% endif %}
                 </ul>
             </nav>
         </header>
