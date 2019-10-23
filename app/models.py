@@ -3,6 +3,8 @@ from app import app, db, login
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(64))
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -39,19 +41,36 @@ class User(UserMixin, db.Model):
     @staticmethod
     def decode_auth_token(auth_token):
         """
-        Decodes the auth token
+        Validates the auth token
         :param auth_token:
         :return: integer|string
         """
         try:
             payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-            return payload['sub']
+            is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            if is_blacklisted_token:
+                return 'Token blacklisted. Please log in again.'
+            else:
+                return payload['sub']
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
 
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+class BlacklistedToken(db.Model):
+    """
+    Token Model for storing JWT tokens
+    """
+    __tablename__ = 'blacklisted_tokens'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisteded_on = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, token):
+        self.token = token
+        self.blacklisteded_on = datetime.datetime.now()
+
+    def __repr__(self):
+        return '<id: token: {}'.format(self.token)
