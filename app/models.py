@@ -1,4 +1,5 @@
 from flask_login import UserMixin
+from flask_bcrypt import bcrypt
 from app import app, db, login
 
 
@@ -50,7 +51,7 @@ class User(UserMixin, db.Model):
         """
         try:
             payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-            is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            is_blacklisted_token = BlacklistedToken.check_blacklist(auth_token)
             if is_blacklisted_token:
                 return 'Token blacklisted. Please log in again.'
             else:
