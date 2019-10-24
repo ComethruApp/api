@@ -1,7 +1,7 @@
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 
-from app import db
+from app import db, bcrypt
 from app.models import User, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -23,7 +23,6 @@ class RegisterAPI(MethodView):
                     email=post_data.get('email'),
                     password=post_data.get('password'),
                 )
-                print(post_data)
 
                 # insert the user
                 db.session.add(user)
@@ -37,7 +36,7 @@ class RegisterAPI(MethodView):
                 }
                 return make_response(jsonify(response_data)), 201
             except Exception as e:
-                print(e)
+                raise e
                 response_data = {
                     'status': 'fail',
                     'message': 'Some error occurred. Please try again.'
@@ -63,9 +62,8 @@ class LoginAPI(MethodView):
             user = User.query.filter_by(
                 email=post_data.get('email')
             ).first()
-            if user and bcrypt.check_password_hash(
-                user.password, post_data.get('password')
-            ):
+            print(post_data)
+            if user and bcrypt.check_password_hash(user.password, post_data.get('password')):
                 auth_token = user.encode_auth_token(user.id)
                 if auth_token:
                     response_data = {

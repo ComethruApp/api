@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
-from flask_bcrypt import bcrypt
+from flask_bcrypt import Bcrypt
 from config import Config
 
 app = Flask(__name__)
@@ -15,6 +15,7 @@ CORS(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
+bcrypt = Bcrypt(app)
 
 if not app.debug:
     if not os.path.exists('logs'):
