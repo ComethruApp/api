@@ -1,9 +1,8 @@
-import requests
-from flask import render_template, flash, redirect, url_for, request, abort, make_response
-from app import app, db
-from app.models import User
+from flask import redirect
+from app import app
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # TODO: proper domain redirect
+    return redirect('https://comethruapp.github.io')
