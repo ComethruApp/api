@@ -9,14 +9,17 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(64))
     email = db.Column(db.String(120), unique=True, nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
+    verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, email, password, admin=False):
+    def __init__(self, name, email, password, verified=False, admin=False):
+        self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
             password, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
         self.registered_on = datetime.datetime.now()
+        self.verified = verified
         self.admin = admin
 
     def encode_auth_token(self, user_id):

@@ -19,8 +19,9 @@ class RegisterAPI(MethodView):
         if not user:
             try:
                 user = User(
+                    name=post_data.get('name'),
                     email=post_data.get('email'),
-                    password=post_data.get('password')
+                    password=post_data.get('password'),
                 )
 
                 # insert the user
