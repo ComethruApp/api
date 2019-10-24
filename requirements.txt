@@ -1,4 +1,5 @@
 Flask
+Flask-Cors
 Flask-SQLAlchemy
 Flask-WTF
 Flask-Login
