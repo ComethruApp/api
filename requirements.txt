@@ -2,7 +2,6 @@ Flask
 Flask-Cors
 Flask-SQLAlchemy
 Flask-WTF
-Flask-Login
 Flask-Migrate
 Flask-Mail
 Flask-Bcrypt
