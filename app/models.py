@@ -14,8 +14,9 @@ class User(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
+    bio = db.Column(db.String(127))
 
-    def __init__(self, name, email, password, verified=False, admin=False):
+    def __init__(self, name, email, password, verified=False, admin=False, bio=''):
         self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
@@ -24,6 +25,7 @@ class User(db.Model):
         self.registered_on = datetime.datetime.now()
         self.verified = verified
         self.admin = admin
+        self.bio = bio
 
     def encode_token(self, user_id):
         """
@@ -70,6 +72,7 @@ class User(db.Model):
             'email': self.email,
             'verified': self.verified,
             'avatar': self.avatar(),
+            'bio': self.bio,
         }
 
 
