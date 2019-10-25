@@ -8,5 +8,4 @@ Flask-Bcrypt
 requests
 psycopg2
 gunicorn
-jwt
 pyjwt
