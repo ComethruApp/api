@@ -24,13 +24,13 @@ class User(db.Model):
         self.verified = verified
         self.admin = admin
 
-    def encode_auth_token(self, user_id):
+    def encode_token(self, user_id):
         """
         Generates the Auth Token
         :return: string
         """
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=400, seconds=0),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
@@ -38,18 +38,18 @@ class User(db.Model):
             payload,
             app.config.get('SECRET_KEY'),
             algorithm='HS256'
-        )
+        ), payload['exp']
 
     @staticmethod
-    def decode_auth_token(auth_token):
+    def decode_token(token):
         """
         Validates the auth token
-        :param auth_token:
+        :param token:
         :return: integer|string
         """
         try:
-            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-            is_blacklisted_token = BlacklistedToken.check_blacklist(auth_token)
+            payload = jwt.decode(token, app.config.get('SECRET_KEY'))
+            is_blacklisted_token = BlacklistedToken.check_blacklist(token)
             if is_blacklisted_token:
                 return 'Token blacklisted. Please log in again.'
             else:
@@ -76,3 +76,9 @@ class BlacklistedToken(db.Model):
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)
+
+    @staticmethod
+    def check_blacklist(auth_token):
+        # check whether auth token has been blacklisted
+        res = BlacklistedToken.query.filter_by(token=str(auth_token)).first()
+        return bool(res)

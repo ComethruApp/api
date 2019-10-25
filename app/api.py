@@ -26,9 +26,9 @@ def api_instance(slug, group_id):
     return {"id": instance.id}
 """
 
-@api_blueprint.route('/users')
+@api_blueprint.route('/users/me')
 def get_users():
-    auth_token = request.args.get('auth_token')
-    print(User.decode_auth_token(auth_token))
+    token = request.args.get('token')
+    print(User.decode_token(token))
 
-    users = User.query.all()
+    #users = User.query.all()

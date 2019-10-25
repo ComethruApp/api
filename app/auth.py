@@ -28,11 +28,11 @@ class RegisterAPI(MethodView):
                 db.session.add(user)
                 db.session.commit()
                 # generate the auth token
-                auth_token = user.encode_auth_token(user.id)
+                token = user.encode_token(user.id)
                 response_data = {
                     'status': 'success',
                     'message': 'Successfully registered.',
-                    'auth_token': auth_token.decode()
+                    'token': token.decode()
                 }
                 return make_response(jsonify(response_data)), 201
             except Exception as e:
@@ -64,13 +64,24 @@ class LoginAPI(MethodView):
             ).first()
             print(post_data)
             if user and bcrypt.check_password_hash(user.password, post_data.get('password')):
-                auth_token = user.encode_auth_token(user.id)
-                if auth_token:
+                # TODO stop abusing this function, it should just return one thing
+                token, exp = user.encode_token(user.id)
+                if token:
                     response_data = {
                         'status': 'success',
                         'message': 'Successfully logged in.',
-                        'auth_token': auth_token.decode()
+                        'token': token.decode(),
+                        # TODO: clean this up?
+                        'user': {
+                            'id': user.id,
+                            'name': user.name,
+                            # do we need this?
+                            'email': user.email,
+                            'token': token.decode(),
+                            'expires_in': exp,
+                        }
                     }
+                    print(token.decode())
                     return make_response(jsonify(response_data)), 200
             else:
                 response_data = {
@@ -96,7 +107,7 @@ class UserAPI(MethodView):
         auth_header = request.headers.get('Authorization')
         if auth_header:
             try:
-                auth_token = auth_header.split(" ")[1]
+                token = auth_header.split(" ")[1]
             except IndexError:
                 response_data = {
                     'status': 'fail',
@@ -104,9 +115,9 @@ class UserAPI(MethodView):
                 }
                 return make_response(jsonify(response_data)), 401
         else:
-            auth_token = ''
-        if auth_token:
-            resp = User.decode_auth_token(auth_token)
+            token = ''
+        if token:
+            resp = User.decode_token(token)
             if not isinstance(resp, str):
                 user = User.query.filter_by(id=resp).first()
                 response_data = {
@@ -140,14 +151,14 @@ class LogoutAPI(MethodView):
         # get auth token
         auth_header = request.headers.get('Authorization')
         if auth_header:
-            auth_token = auth_header.split(" ")[1]
+            token = auth_header.split(" ")[1]
         else:
-            auth_token = ''
-        if auth_token:
-            resp = User.decode_auth_token(auth_token)
+            token = ''
+        if token:
+            resp = User.decode_token(token)
             if not isinstance(resp, str):
                 # mark the token as blacklisted
-                blacklisted_token = BlacklistedToken(token=auth_token)
+                blacklisted_token = BlacklistedToken(token=token)
                 try:
                     # insert the token
                     db.session.add(blacklisted_token)
