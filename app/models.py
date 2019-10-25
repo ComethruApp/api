@@ -1,6 +1,7 @@
 from app import app, db, bcrypt
 import datetime
 import jwt
+import hashlib
 
 
 class User(db.Model):
@@ -40,6 +41,9 @@ class User(db.Model):
             algorithm='HS256'
         ), payload['exp']
 
+    def avatar(self):
+        return hashlib.md5(self.email.encode('utf-8')).hexdigest()
+
     @staticmethod
     def decode_token(token):
         """
@@ -65,6 +69,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'verified': self.verified,
+            'avatar': self.avatar(),
         }
 
 
