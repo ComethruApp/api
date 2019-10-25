@@ -10,7 +10,6 @@ class RegisterAPI(MethodView):
     """
     User Registration Resource
     """
-
     def post(self):
         # get the post data
         post_data = request.get_json()

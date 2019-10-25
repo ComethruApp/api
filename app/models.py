@@ -30,7 +30,7 @@ class User(db.Model):
         :return: string
         """
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=400, seconds=0),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=365, seconds=0),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
@@ -58,6 +58,14 @@ class User(db.Model):
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
+
+    def json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'verified': self.verified,
+        }
 
 
 class BlacklistedToken(db.Model):

@@ -26,9 +26,15 @@ def api_instance(slug, group_id):
     return {"id": instance.id}
 """
 
-@api_blueprint.route('/users/me')
-def get_users():
-    token = request.args.get('token')
-    print(User.decode_token(token))
+@api_blueprint.errorhandler(404)
+def not_found_error(error):
+    return jsonify({'status': 'fail'}), 404
 
-    #users = User.query.all()
+@api_blueprint.route('/users/me')
+def get_me():
+    token = request.args.get('token')
+    user_id = User.decode_token(token)
+    user = User.query.get(user_id)
+    if user:
+        return jsonify(user.json())
+    abort(404)
