@@ -37,7 +37,6 @@ def get_me():
 @api_blueprint.route('/events')
 def get_events():
     events = Event.query.all()
-    print(jsonify([event.json() for event in events]))
     return jsonify([event.json() for event in events])
 
 @api_blueprint.route('/events/<event_id>')

@@ -170,6 +170,7 @@ class Event(db.Model):
 
     def __init__(self, raw):
         self.time_start = dateutil.parser.parse(raw.pop('time_start', None))
+
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
