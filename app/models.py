@@ -2,6 +2,7 @@ from app import app, db, bcrypt
 import datetime
 import jwt
 import hashlib
+import dateutil.parser
 
 
 followers = db.Table('followers',
@@ -18,16 +19,14 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     bio = db.Column(db.String(127))
-    # primaryjoin indicates the condition that links the left side entity (the follower user) with the association table. The join condition for the left side of the relationship is the user ID matching the follower_id field of the association table. The followers.c.follower_id expression references the follower_id column of the association table.
-    # secondaryjoin indicates the condition that links the right side entity (the followed user) with the association table. This condition is similar to the one for primaryjoin, with the only difference that now I'm using followed_id, which is the other foreign key in the association table.
-    # see more: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers
+
     followed = db.relationship(
             'User', secondary=followers,
             primaryjoin=(followers.c.follower_id == id),
@@ -51,6 +50,8 @@ class User(db.Model):
         self.verified = verified
         self.admin = admin
         self.bio = bio
+        # Statically set to Yale
+        self.school_id = 1
 
     def encode_token(self, user_id):
         """
@@ -145,7 +146,7 @@ class Event(db.Model):
     __tablename__ = 'events'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.String(1024))
 
@@ -168,14 +169,15 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
     def __init__(self, raw):
+        self.time_start = dateutil.parser.parse(raw.pop('time_start', None))
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
 
     def json(self):
-        return {c.name: getattr(self, c.name) for c in ('id', 'name', 'description',
-                                                        'location_name', 'location_lat', 'location_lon',
-                                                        'time_start', 'time_end', 'venmo')}
+        return {key: getattr(self, key) for key in ('id', 'name', 'description',
+                                                    'location_name', 'location_lat', 'location_lon',
+                                                    'time_start', 'time_end', 'venmo')}
 
 class School(db.Model):
     __tablename__ = 'schools'
