@@ -150,7 +150,7 @@ class Event(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.String(1024))
 
-    location_name = db.Column(db.String(127))
+    location_name = db.Column(db.String(127), nullable=False)
     location_lat = db.Column(db.Float)
     location_lon = db.Column(db.Float)
 
