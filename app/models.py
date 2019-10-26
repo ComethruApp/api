@@ -33,14 +33,13 @@ class User(db.Model):
             primaryjoin=(followers.c.follower_id == id),
             secondaryjoin=(followers.c.followed_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    hostships = db.relationship(
+    hosted = db.relationship(
             'Event', secondary=hostships,
             primaryjoin=(hostships.c.host_id == id),
             secondaryjoin=(hostships.c.event_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
-
 
     def __init__(self, name, email, password, verified=False, admin=False, bio=''):
         self.name = name
@@ -125,9 +124,6 @@ class BlacklistedToken(db.Model):
     def __init__(self, token):
         self.token = token
         self.blacklisted_on = datetime.datetime.now()
-
-    def __repr__(self):
-        return '<id: token: {}'.format(self.token)
 
     @staticmethod
     def check_blacklist(auth_token):

@@ -27,11 +27,20 @@ class RegisterAPI(MethodView):
                 db.session.add(user)
                 db.session.commit()
                 # generate the auth token
-                token = user.encode_token(user.id)
+                token, exp = user.encode_token(user.id)
                 response_data = {
                     'status': 'success',
                     'message': 'Successfully registered.',
-                    'token': token.decode()
+                    'token': token.decode(),
+                    # TODO: clean this up?
+                    'user': {
+                        'id': user.id,
+                        'name': user.name,
+                        # do we need this?
+                        'email': user.email,
+                        'token': token.decode(),
+                        'expires_in': exp,
+                    }
                 }
                 return make_response(jsonify(response_data)), 201
             except Exception as e:
@@ -61,7 +70,6 @@ class LoginAPI(MethodView):
             user = User.query.filter_by(
                 email=post_data.get('email')
             ).first()
-            print(post_data)
             if user and bcrypt.check_password_hash(user.password, post_data.get('password')):
                 # TODO stop abusing this function, it should just return one thing
                 token, exp = user.encode_token(user.id)
@@ -80,7 +88,6 @@ class LoginAPI(MethodView):
                             'expires_in': exp,
                         }
                     }
-                    print(token.decode())
                     return make_response(jsonify(response_data)), 200
             else:
                 response_data = {
