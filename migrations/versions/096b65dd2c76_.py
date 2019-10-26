@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f9297cf8b652
+Revision ID: 096b65dd2c76
 Revises: 
-Create Date: 2019-10-25 20:34:14.260863
+Create Date: 2019-10-26 09:46:13.045496
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f9297cf8b652'
+revision = '096b65dd2c76'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,17 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('token')
     )
+    op.create_table('schools',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=True),
+    sa.Column('nickname', sa.String(length=16), nullable=True),
+    sa.Column('color', sa.String(length=6), nullable=True),
+    sa.Column('domain', sa.String(length=32), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('domain'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('nickname')
+    )
     op.create_table('events',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=64), nullable=True),
@@ -36,16 +47,9 @@ def upgrade():
     sa.Column('time_start', sa.DateTime(), nullable=False),
     sa.Column('time_end', sa.DateTime(), nullable=True),
     sa.Column('venmo', sa.String(length=32), nullable=True),
+    sa.Column('school_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['school_id'], ['schools.id'], ),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('schools',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=64), nullable=True),
-    sa.Column('nickname', sa.String(length=16), nullable=True),
-    sa.Column('color', sa.String(length=6), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name'),
-    sa.UniqueConstraint('nickname')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -81,7 +85,7 @@ def downgrade():
     op.drop_table('hostships')
     op.drop_table('followers')
     op.drop_table('users')
-    op.drop_table('schools')
     op.drop_table('events')
+    op.drop_table('schools')
     op.drop_table('blacklisted_tokens')
     # ### end Alembic commands ###

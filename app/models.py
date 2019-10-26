@@ -165,6 +165,8 @@ class Event(db.Model):
         secondaryjoin=(hostships.c.host_id == id),
         backref=db.backref('hostships', lazy='dynamic'), lazy='dynamic')
 
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+
     def __init__(self, raw):
         for field in raw:
             setattr(self, field, raw[field])
@@ -182,5 +184,14 @@ class School(db.Model):
     name = db.Column(db.String(64), unique=True)
     nickname = db.Column(db.String(16), unique=True)
     color = db.Column(db.String(6), nullable=True)
+    domain = db.Column(db.String(32), unique=True)
 
-    students = db.relationship('User', backref='bot', lazy='dynamic')
+    students = db.relationship('User', backref='users', lazy='dynamic')
+    events = db.relationship('Event', backref='events', lazy='dynamic')
+
+    """
+    @staticmethod
+    def get_by_email(email):
+        domain = email.split('@')[-1]
+        School.filter_by(domain=domain),
+        """
