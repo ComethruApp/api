@@ -15,6 +15,22 @@ class User(db.Model):
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     bio = db.Column(db.String(127))
+    # primaryjoin indicates the condition that links the left side entity (the follower user) with the association table. The join condition for the left side of the relationship is the user ID matching the follower_id field of the association table. The followers.c.follower_id expression references the follower_id column of the association table.
+    # secondaryjoin indicates the condition that links the right side entity (the followed user) with the association table. This condition is similar to the one for primaryjoin, with the only difference that now I'm using followed_id, which is the other foreign key in the association table.
+    # see more: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers
+    followed = db.relationship(
+            'User', secondary=followers,
+            primaryjoin=(followers.c.follower_id == id),
+            secondaryjoin=(followers.c.followed_id == id),
+            backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    hostships = db.relationship(
+            'Event', secondary=hostships,
+            primaryjoin=(hostships.c.host_id == id),
+            secondaryjoin=(hostships.c.event_id == id),
+            backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+
 
     def __init__(self, name, email, password, verified=False, admin=False, bio=''):
         self.name = name
@@ -75,6 +91,21 @@ class User(db.Model):
             'bio': self.bio,
         }
 
+    def follow(self, user):
+        if not self.is_following(user):
+            self.followed.append(user)
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.followed.remove(user)
+
+    def is_following(self, user):
+        return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
 
 class BlacklistedToken(db.Model):
     """
@@ -98,3 +129,48 @@ class BlacklistedToken(db.Model):
         # check whether auth token has been blacklisted
         res = BlacklistedToken.query.filter_by(token=str(auth_token)).first()
         return bool(res)
+
+
+class Event(db.Model):
+    """
+    Does it need that much explanation?
+    """
+    __tablename__ = 'events'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(64))
+    registered_on = db.Column(db.DateTime, nullable=False)
+    description = db.Column(db.String(1024))
+
+    location_name = db.Column(db.String(127))
+    location_lat = db.Column(db.Float)
+    location_lon = db.Column(db.Float)
+
+    time_start = db.Column(db.DateTime, nullable=False)
+    time_end = db.Column(db.DateTime)
+
+    venmo = db.Column(db.String(32))
+
+
+    hosts = db.relationship(
+        'User', secondary=hostships,
+        primaryjoin=(hostships.c.event_id == id),
+        secondaryjoin=(hostships.c.host_id == id),
+        backref=db.backref('hostships', lazy='dynamic'), lazy='dynamic')
+
+
+hostships = db.Table('hostships',
+    db.Column('host_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
+)
+
+
+class School(db.Model):
+    __tablename__ = 'schools'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(64), unique=True)
+    nickname = db.Column(db.String(16), unique=True)
+    color = db.Column(db.String(6), nullable=True)
+
+    students = db.relationship('User', backref='bot', lazy='dynamic')
