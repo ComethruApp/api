@@ -4,6 +4,16 @@ import jwt
 import hashlib
 
 
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('users.id'))
+)
+
+hostships = db.Table('hostships',
+    db.Column('host_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'))
+)
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -102,11 +112,6 @@ class User(db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
-followers = db.Table('followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-)
-
 class BlacklistedToken(db.Model):
     """
     Token Model for storing JWT tokens
@@ -157,13 +162,6 @@ class Event(db.Model):
         primaryjoin=(hostships.c.event_id == id),
         secondaryjoin=(hostships.c.host_id == id),
         backref=db.backref('hostships', lazy='dynamic'), lazy='dynamic')
-
-
-hostships = db.Table('hostships',
-    db.Column('host_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
-)
-
 
 class School(db.Model):
     __tablename__ = 'schools'
