@@ -111,6 +111,12 @@ class User(db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+    @staticmethod
+    def from_token(token):
+        user_id = User.decode_token(token)
+        user = User.query.get(user_id)
+        return user
+
 class BlacklistedToken(db.Model):
     """
     Token Model for storing JWT tokens
@@ -158,6 +164,16 @@ class Event(db.Model):
         primaryjoin=(hostships.c.event_id == id),
         secondaryjoin=(hostships.c.host_id == id),
         backref=db.backref('hostships', lazy='dynamic'), lazy='dynamic')
+
+    def __init__(self, raw):
+        for field in raw:
+            setattr(self, field, raw[field])
+        self.registered_on = datetime.datetime.now()
+
+    def json(self):
+        return {c.name: getattr(self, c.name) for c in ('id', 'name', 'description',
+                                                        'location_name', 'location_lat', 'location_lon',
+                                                        'time_start', 'time_end', 'venmo')}
 
 class School(db.Model):
     __tablename__ = 'schools'
