@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort
 from app import db
-from app.models import User
+from app.models import User, Event
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -32,7 +32,8 @@ def get_me():
 
 @api_blueprint.route('/events')
 def get_events():
-    pass
+    events = Event.query.all()
+    return jsonify([event.json() for event in events])
 
 @api_blueprint.route('/events/<event_id>')
 def get_event(event_id):
