@@ -5,4 +5,4 @@ from app import app
 @app.route('/')
 def index():
     # TODO: proper domain redirect
-    return redirect('https://comethruapp.github.io')
+    return redirect('https://comethru.io')
