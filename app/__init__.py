@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
+from flask_seeder import FlaskSeeder
 from config import Config
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
 bcrypt = Bcrypt(app)
+seeder = FlaskSeeder()
 
 if not app.debug:
     if not os.path.exists('logs'):

@@ -7,7 +7,11 @@ api_blueprint = Blueprint('api', __name__)
 
 @api_blueprint.errorhandler(404)
 def not_found_error(error):
-    return jsonify({'status':'fail'}), 404
+    return jsonify({'status': 'fail', 'error': 'Not found.'}), 404
+
+@api_blueprint.errorhandler(401)
+def unauthorized(error):
+    return jsonify({'status': 'fail', 'error': 'You don\'t have permission to do this.'}), 401
 
 def verify_token():
     me = User.from_token(request.args.get('token'))
