@@ -5,6 +5,7 @@ Flask-WTF
 Flask-Migrate
 Flask-Mail
 Flask-Bcrypt
+Flask-Seeder
 requests
 psycopg2
 gunicorn
