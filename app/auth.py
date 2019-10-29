@@ -2,6 +2,7 @@ from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Message
 
 from app import db, bcrypt, config
 from app.models import User, BlacklistedToken
@@ -29,7 +30,13 @@ class RegisterAPI(MethodView):
                 db.session.add(user)
                 db.session.commit()
 
+                # Build and send confirmation email
                 confirmation_token = generate_confirmation_token(user.email)
+                confirm_url = url_for('user.confirm_email', token=confirmation_token, _external=True)
+                html = render_template('confirmation.html', confirm_url=confirm_url)
+                subject = "Please confirm your email"
+                send_email(user.email, subject, html)
+
                 response_data = {
                     'status': 'success',
                     'message': 'Successfully registered. Check your email to confirm your address, then log in!',
@@ -65,6 +72,16 @@ def confirm_email(token):
         db.session.add(user)
         db.session.commit()
         return render_template('confirm.html', message='Your account is confirmed! You can now log in through the Comethru mobile app.'), 200
+
+
+def send_email(to, subject, template):
+    msg = Message(
+        subject,
+        recipients=[to],
+        html=template,
+        sender=config['MAIL_DEFAULT_SENDER']
+    )
+    mail.send(msg)
 
 
 class LoginAPI(MethodView):
