@@ -1,10 +1,10 @@
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, make_response, jsonify, url_for, render_template
 from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 
-from app import db, bcrypt, config
+from app import app, db, bcrypt, mail
 from app.models import User, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -32,9 +32,9 @@ class RegisterAPI(MethodView):
 
                 # Build and send confirmation email
                 confirmation_token = generate_confirmation_token(user.email)
-                confirm_url = url_for('user.confirm_email', token=confirmation_token, _external=True)
-                html = render_template('confirmation.html', confirm_url=confirm_url)
-                subject = "Please confirm your email"
+                confirm_url = url_for('confirm_email', token=confirmation_token, _external=True)
+                html = render_template('confirm_email.html', confirm_url=confirm_url)
+                subject = "Confirm your email for Comethru!"
                 send_email(user.email, subject, html)
 
                 response_data = {
@@ -79,7 +79,7 @@ def send_email(to, subject, template):
         subject,
         recipients=[to],
         html=template,
-        sender=config['MAIL_DEFAULT_SENDER']
+        sender=app.config['MAIL_DEFAULT_SENDER']
     )
     mail.send(msg)
 
@@ -250,12 +250,12 @@ auth_blueprint.add_url_rule(
 
 
 def generate_confirmation_token(email):
-    serializer = URLSafeTimedSerializer(config['SECRET_KEY'])
-    return serializer.dumps(email, salt=config['SECURITY_PASSWORD_SALT'])
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
 
 
 def confirm_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(config['SECRET_KEY'])
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:
         email = serializer.loads(
             token,
