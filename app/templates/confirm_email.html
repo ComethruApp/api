@@ -1,7 +1,11 @@
-<p>Welcome to Comethru! Please follow this link to verify your email and activate your account:</p>
-<p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
-<br>
-<p>See you soon!</p>
-<p>Erik Boesen (GH '23)</p>
-<p>Comethru developer</p>
-<p style="font-size: 10px;">Contact me at erik.boesen@yale.edu if you need anything!</p>
+<div style="font-family: Georgia, sans-serif;">
+    <img src="https://comethru.io/assets/logo/logo_small.png" height="100" alt="Comethru logo">
+    <p>Welcome to Comethru! Please click the button to verify your email and activate your account:</p>
+    <a style="display: inline-block; padding: 20px; background: #263238; box-sizing: border-box; color: white; text-decoration: none;" href="{{ confirm_url }}">Confirm email</a>
+    <p>Alternatively, click or copy this link: {{ confirm_url }}</p>
+    <p>Feel free to contact erik.boesen@yale.edu with questions, or reply to this email!</p>
+    <p>
+        See you soon!<br>
+        - Erik Boesen, Comethru Founder (Hopper '23)<br>
+    </p>
+</div>
