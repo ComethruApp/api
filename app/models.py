@@ -22,10 +22,11 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
     registered_on = db.Column(db.DateTime, nullable=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
-    bio = db.Column(db.String(127))
+    bio = db.Column(db.String(127), nullable=True)
 
     followed = db.relationship(
             'User', secondary=followers,
@@ -40,16 +41,14 @@ class User(db.Model):
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
-    def __init__(self, name, email, password, verified=False, admin=False, bio=''):
+    def __init__(self, name, email, password, confirmed=False):
         self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
             password, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
         self.registered_on = datetime.datetime.now()
-        self.verified = verified
-        self.admin = admin
-        self.bio = bio
+        self.confirmed = confirmed
         # Statically set to Yale
         self.school_id = 1
 

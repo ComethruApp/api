@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request, abort, g
 from app import db
 from app.models import User, Event
 
@@ -14,8 +14,8 @@ def unauthorized(error):
     return jsonify({'status': 'fail', 'error': 'You don\'t have permission to do this.'}), 401
 
 def verify_token():
-    me = User.from_token(request.args.get('token'))
-    if me is None:
+    g.me = User.from_token(request.args.get('token'))
+    if g.me is None:
         abort(401)
 
 api_blueprint.before_request(verify_token)
@@ -29,10 +29,7 @@ def get_user(user_id):
 
 @api_blueprint.route('/users/me')
 def get_me():
-    # TODO don't repeat what's fetched in verify_token
-    me = User.from_token(request.args.get('token'))
-
-    return jsonify(me.json())
+    return jsonify(g.me.json())
 
 @api_blueprint.route('/events')
 def get_events():

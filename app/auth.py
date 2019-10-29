@@ -1,7 +1,9 @@
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
+# For confirmation
+from itsdangerous import URLSafeTimedSerializer
 
-from app import db, bcrypt
+from app import db, bcrypt, config
 from app.models import User, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -21,26 +23,16 @@ class RegisterAPI(MethodView):
                     name=post_data.get('name'),
                     email=post_data.get('email'),
                     password=post_data.get('password'),
+                    confirmed=False,
                 )
-
-                # insert the user
+                # Insert the user
                 db.session.add(user)
                 db.session.commit()
-                # generate the auth token
-                token, exp = user.encode_token(user.id)
+
+                confirmation_token = generate_confirmation_token(user.email)
                 response_data = {
                     'status': 'success',
-                    'message': 'Successfully registered.',
-                    'token': token.decode(),
-                    # TODO: clean this up?
-                    'user': {
-                        'id': user.id,
-                        'name': user.name,
-                        # do we need this?
-                        'email': user.email,
-                        'token': token.decode(),
-                        'expires_in': exp,
-                    }
+                    'message': 'Successfully registered. Check your email to confirm your address, then log in!',
                 }
                 return make_response(jsonify(response_data)), 201
             except Exception as e:
@@ -56,6 +48,23 @@ class RegisterAPI(MethodView):
                 'message': 'User already exists. Please Log in.',
             }
             return make_response(jsonify(response_data)), 202
+
+
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = confirm_token(token)
+    except:
+        return render_template('confirm.html', message='Invalid or expired link.'), 401
+        # TODO: what are they supposed to do then?
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        return render_template('confirm.html', message='Email already confirmed! Please log in.'), 200
+    else:
+        user.confirmed = True
+        db.session.add(user)
+        db.session.commit()
+        return render_template('confirm.html', message='Your account is confirmed! You can now log in through the Comethru mobile app.'), 200
 
 
 class LoginAPI(MethodView):
@@ -221,3 +230,21 @@ auth_blueprint.add_url_rule(
     view_func=logout_view,
     methods=['POST']
 )
+
+
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(config['SECRET_KEY'])
+    return serializer.dumps(email, salt=config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token,
+            salt=app.config['SECURITY_PASSWORD_SALT'],
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
