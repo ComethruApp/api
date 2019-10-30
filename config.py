@@ -22,5 +22,5 @@ class Config(object):
     MAIL_PASSWORD = os.environ['APP_MAIL_PASSWORD']
 
     # mail accounts
-    MAIL_DEFAULT_SENDER = 'erik.boesen@gmail.com'
+    MAIL_DEFAULT_SENDER = 'hello@comethru.io'
     #MAIL_DEBUG = True
