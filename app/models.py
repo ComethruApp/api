@@ -191,9 +191,7 @@ class School(db.Model):
     students = db.relationship('User', backref='users', lazy='dynamic')
     events = db.relationship('Event', backref='events', lazy='dynamic')
 
-    """
     @staticmethod
     def get_by_email(email):
         domain = email.split('@')[-1]
-        School.filter_by(domain=domain),
-        """
+        return School.query.filter_by(domain=domain)

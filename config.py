@@ -23,4 +23,4 @@ class Config(object):
 
     # mail accounts
     MAIL_DEFAULT_SENDER = 'erik.boesen@gmail.com'
-    MAIL_DEBUG = True
+    #MAIL_DEBUG = True

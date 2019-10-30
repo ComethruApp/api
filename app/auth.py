@@ -15,16 +15,25 @@ class RegisterAPI(MethodView):
     """
     def post(self):
         # get the post data
-        post_data = request.get_json()
+        payload = request.get_json()
         # check if user already exists
-        user = User.query.filter_by(email=post_data.get('email')).first()
+        user = User.query.filter_by(email=payload.get('email')).first()
         if not user:
             try:
+                email = payload['email']
+                school = School.get_by_email(email)
+                if school is None:
+                    return jsonify({
+                        'status': 'fail',
+                        'message': 'You must use a valid .edu email address from a supported school.',
+                    }), 401
+
                 user = User(
-                    name=post_data.get('name'),
-                    email=post_data.get('email'),
-                    password=post_data.get('password'),
+                    name=payload['name'],
+                    email=email,
+                    password=payload['password'],
                     confirmed=False,
+                    school_id=school.id,
                 )
                 # Insert the user
                 db.session.add(user)
@@ -37,24 +46,21 @@ class RegisterAPI(MethodView):
                 subject = "Confirm your email for Comethru!"
                 send_email(user.email, subject, html)
 
-                response_data = {
+                return jsonify({
                     'status': 'success',
                     'message': 'Successfully registered. Check your email to confirm your address, then log in!',
-                }
-                return make_response(jsonify(response_data)), 201
+                }), 201
             except Exception as e:
-                raise e
-                response_data = {
+                print(e)
+                return jsonify({
                     'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
-                }
-                return make_response(jsonify(response_data)), 401
+                    'message': 'Some error occurred. Please try again. Contact the developers if this continues to happen.'
+                }), 401
         else:
-            response_data = {
+            return jsonify({
                 'status': 'fail',
                 'message': 'User already exists. Please Log in.',
-            }
-            return make_response(jsonify(response_data)), 202
+            }), 202
 
 
 @app.route('/confirm/<token>')
@@ -90,13 +96,13 @@ class LoginAPI(MethodView):
     """
     def post(self):
         # get the post data
-        post_data = request.get_json()
+        payload = request.get_json()
         try:
             # fetch the user data
             user = User.query.filter_by(
-                email=post_data.get('email')
+                email=payload.get('email')
             ).first()
-            if user and bcrypt.check_password_hash(user.password, post_data.get('password')):
+            if user and bcrypt.check_password_hash(user.password, payload.get('password')):
                 # TODO stop abusing this function, it should just return one thing
                 token, exp = user.encode_token(user.id)
                 if token:
