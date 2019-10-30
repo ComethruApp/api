@@ -33,7 +33,7 @@ class RegisterAPI(MethodView):
                 # Build and send confirmation email
                 confirmation_token = generate_confirmation_token(user.email)
                 confirm_url = url_for('confirm_email', token=confirmation_token, _external=True)
-                html = render_template('confirm_email.html', confirm_url=confirm_url)
+                html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
                 subject = "Confirm your email for Comethru!"
                 send_email(user.email, subject, html)
 
