@@ -5,7 +5,7 @@ from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 
 from app import app, db, bcrypt, mail
-from app.models import User, BlacklistedToken
+from app.models import User, School, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -48,18 +48,19 @@ class RegisterAPI(MethodView):
 
                 return jsonify({
                     'status': 'success',
-                    'message': 'Successfully registered. Check your email to confirm your address, then log in!',
+                    'message': 'Check your email to confirm your address, then log in!',
                 }), 201
             except Exception as e:
-                print(e)
+                # TODO: eventually we should just return the error to the client
+                raise e
                 return jsonify({
                     'status': 'fail',
                     'message': 'Some error occurred. Please try again. Contact the developers if this continues to happen.'
-                }), 401
+                }), 500
         else:
             return jsonify({
                 'status': 'fail',
-                'message': 'User already exists. Please Log in.',
+                'message': 'User already exists. Please log in.',
             }), 202
 
 

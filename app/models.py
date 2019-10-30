@@ -41,7 +41,7 @@ class User(db.Model):
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
-    def __init__(self, name, email, password, confirmed=False):
+    def __init__(self, name, email, password, confirmed=False, school_id=1):
         self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
@@ -50,7 +50,7 @@ class User(db.Model):
         self.registered_on = datetime.datetime.now()
         self.confirmed = confirmed
         # Statically set to Yale
-        self.school_id = 1
+        self.school_id = school_id
 
     def encode_token(self, user_id):
         """
@@ -194,4 +194,6 @@ class School(db.Model):
     @staticmethod
     def get_by_email(email):
         domain = email.split('@')[-1]
-        return School.query.filter_by(domain=domain)
+        print(domain)
+        print(School.query.all())
+        return School.query.filter_by(domain=domain).first()
