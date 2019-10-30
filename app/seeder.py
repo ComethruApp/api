@@ -9,6 +9,7 @@ class SchoolSeeder(Seeder):
             color='00356b',
             domain='yale.edu')
         self.db.session.add(yale)
+        self.db.session.commit()
 
 
 class DemoSeeder(Seeder):

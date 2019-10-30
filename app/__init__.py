@@ -19,6 +19,7 @@ migrate = Migrate(app, db)
 mail = Mail(app)
 bcrypt = Bcrypt(app)
 seeder = FlaskSeeder()
+seeder.init_app(app, db)
 
 if not app.debug:
     if not os.path.exists('logs'):
