@@ -156,8 +156,7 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
     def __init__(self, raw):
-        self.time_start = dateutil.parser.parse(raw.pop('time_start', None))
-
+        self.time = dateutil.parser.parse(raw.pop('time', None))
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
@@ -188,6 +187,4 @@ class School(db.Model):
     @staticmethod
     def get_by_email(email):
         domain = email.split('@')[-1]
-        print(domain)
-        print(School.query.all())
         return School.query.filter_by(domain=domain).first()
