@@ -161,6 +161,9 @@ class Event(db.Model):
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
 
+    def add_host(self, user):
+        self.hosts.add(user)
+
     def hosted_by(self, user):
         self.hosts.filter(hosts.c.host_id == user.id).count() > 0
 
