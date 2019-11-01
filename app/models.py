@@ -165,7 +165,7 @@ class Event(db.Model):
         self.hosts.add(user)
 
     def hosted_by(self, user):
-        self.hosts.filter(hosts.c.host_id == user.id).count() > 0
+        self.hosts.filter(self.hosts.c.host_id == user.id).count() > 0
 
     def json(self):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
