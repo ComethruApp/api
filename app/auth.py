@@ -9,8 +9,52 @@ from app.models import User, School, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
+@auth_blueprint.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = confirm_token(token)
+    except:
+        return render_template('confirm.html', message='Invalid or expired link.'), 401
+        # TODO: what are they supposed to do then?
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        return render_template('confirm.html', message='Email already confirmed! Please log in.'), 200
+    else:
+        user.confirmed = True
+        db.session.add(user)
+        db.session.commit()
+        return render_template('confirm.html', message='Your account is confirmed! You can now log in through the Comethru mobile app.'), 200
+
+
+def send_email(to, subject, template):
+    msg = Message(
+        subject,
+        recipients=[to],
+        html=template,
+        sender=app.config['MAIL_DEFAULT_SENDER']
+    )
+    mail.send(msg)
+
+
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token,
+            salt=app.config['SECURITY_PASSWORD_SALT'],
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
+
 @auth_blueprint.route('/register', methods=['POST'])
-def register(self):
+def register():
     # get the post data
     payload = request.get_json()
     # check if user already exists
@@ -39,7 +83,7 @@ def register(self):
 
             # Build and send confirmation email
             confirmation_token = generate_confirmation_token(user.email)
-            confirm_url = url_for('confirm_email', token=confirmation_token, _external=True)
+            confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
             html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
             subject = "Confirm your email for Comethru!"
             send_email(user.email, subject, html)
@@ -61,32 +105,6 @@ def register(self):
             'message': 'User already exists. Please log in.',
         }), 202
 
-
-@auth_blueprint.route('/confirm/<token>')
-def confirm_email(token):
-    try:
-        email = confirm_token(token)
-    except:
-        return render_template('confirm.html', message='Invalid or expired link.'), 401
-        # TODO: what are they supposed to do then?
-    user = User.query.filter_by(email=email).first_or_404()
-    if user.confirmed:
-        return render_template('confirm.html', message='Email already confirmed! Please log in.'), 200
-    else:
-        user.confirmed = True
-        db.session.add(user)
-        db.session.commit()
-        return render_template('confirm.html', message='Your account is confirmed! You can now log in through the Comethru mobile app.'), 200
-
-
-def send_email(to, subject, template):
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=app.config['MAIL_DEFAULT_SENDER']
-    )
-    mail.send(msg)
 
 
 @auth_blueprint.route('/login', methods=['POST'])
@@ -172,20 +190,3 @@ def logout():
             'message': 'Provide a valid auth token.'
         }
         return make_response(jsonify(response_data)), 403
-
-def generate_confirmation_token(email):
-    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
-
-
-def confirm_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    try:
-        email = serializer.loads(
-            token,
-            salt=app.config['SECURITY_PASSWORD_SALT'],
-            max_age=expiration
-        )
-    except:
-        return False
-    return email

@@ -14,7 +14,7 @@ def unauthorized(error):
     return jsonify({'status': 'fail', 'error': 'You don\'t have permission to do this.'}), 401
 
 def verify_token():
-    g.me = User.from_token(request.headers.get('token'))
+    g.me = User.from_token(request.args.get('token'))
     if g.me is None:
         abort(401)
 
