@@ -143,7 +143,7 @@ class Event(db.Model):
 
     location = db.Column(db.String(127), nullable=False)
     lat = db.Column(db.Float)
-    lon = db.Column(db.Float)
+    lng = db.Column(db.Float)
 
     time = db.Column(db.DateTime, nullable=False)
 
@@ -164,8 +164,8 @@ class Event(db.Model):
 
     def json(self):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
-                                                   'location_name', 'location_lat', 'location_lon',
-                                                   'time_start', 'time_end', 'venmo')}
+                                                   'location', 'lat', 'lng',
+                                                   'time')}
         raw.update({
             'people': random.randint(0, 50),
             'rating': random.randint(0, 100),
