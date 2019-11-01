@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+git push heroku & git push
+wait
 heroku pg:reset DATABASE --confirm comethru
 heroku run 'flask db init; flask db migrate'
 
