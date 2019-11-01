@@ -9,63 +9,60 @@ from app.models import User, School, BlacklistedToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
-class RegisterAPI(MethodView):
-    """
-    User Registration Resource
-    """
-    def post(self):
-        # get the post data
-        payload = request.get_json()
-        # check if user already exists
-        user = User.query.filter_by(email=payload.get('email')).first()
-        if not user:
-            try:
-                email = payload['email']
-                school = School.get_by_email(email)
-                if school is None:
-                    return jsonify({
-                        'status': 'fail',
-                        'message': 'You must use a valid @yale.edu email address.'
-                        # 'message': 'You must use a valid .edu email address from a supported school.',
-                    }), 401
-
-                user = User(
-                    name=payload['name'],
-                    email=email,
-                    password=payload['password'],
-                    confirmed=False,
-                    school_id=school.id,
-                )
-                # Insert the user
-                db.session.add(user)
-                db.session.commit()
-
-                # Build and send confirmation email
-                confirmation_token = generate_confirmation_token(user.email)
-                confirm_url = url_for('confirm_email', token=confirmation_token, _external=True)
-                html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-                subject = "Confirm your email for Comethru!"
-                send_email(user.email, subject, html)
-
-                return jsonify({
-                    'status': 'success',
-                    'message': 'Check your email to confirm your address, then log in!',
-                }), 201
-            except Exception as e:
-                # TODO: eventually we should just return the error to the client
-                raise e
+@auth_blueprint.route('/register', methods=['POST'])
+def register(self):
+    # get the post data
+    payload = request.get_json()
+    # check if user already exists
+    user = User.query.filter_by(email=payload.get('email')).first()
+    if not user:
+        try:
+            email = payload['email']
+            school = School.get_by_email(email)
+            if school is None:
                 return jsonify({
                     'status': 'fail',
-                    'message': 'Some error occurred. Please try again. Contact the developers if this continues to happen.'
-                }), 500
-        else:
+                    'message': 'You must use a valid @yale.edu email address.'
+                    # 'message': 'You must use a valid .edu email address from a supported school.',
+                }), 401
+
+            user = User(
+                name=payload['name'],
+                email=email,
+                password=payload['password'],
+                confirmed=False,
+                school_id=school.id,
+            )
+            # Insert the user
+            db.session.add(user)
+            db.session.commit()
+
+            # Build and send confirmation email
+            confirmation_token = generate_confirmation_token(user.email)
+            confirm_url = url_for('confirm_email', token=confirmation_token, _external=True)
+            html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
+            subject = "Confirm your email for Comethru!"
+            send_email(user.email, subject, html)
+
+            return jsonify({
+                'status': 'success',
+                'message': 'Check your email to confirm your address, then log in!',
+            }), 201
+        except Exception as e:
+            # TODO: eventually we should just return the error to the client
+            raise e
             return jsonify({
                 'status': 'fail',
-                'message': 'User already exists. Please log in.',
-            }), 202
+                'message': 'Some error occurred. Please try again. Contact the developers if this continues to happen.'
+            }), 500
+    else:
+        return jsonify({
+            'status': 'fail',
+            'message': 'User already exists. Please log in.',
+        }), 202
 
 
-@app.route('/confirm/<token>')
+@auth_blueprint.route('/confirm/<token>')
 def confirm_email(token):
     try:
         email = confirm_token(token)
@@ -92,170 +89,89 @@ def send_email(to, subject, template):
     mail.send(msg)
 
 
-class LoginAPI(MethodView):
-    """
-    User Login Resource
-    """
-    def post(self):
-        # get the post data
-        payload = request.get_json()
-        try:
-            # fetch the user data
-            user = User.query.filter_by(
-                email=payload.get('email')
-            ).first()
-            if user and bcrypt.check_password_hash(user.password, payload.get('password')):
-                # TODO stop abusing this function, it should just return one thing
-                token, exp = user.encode_token(user.id)
-                if token:
-                    response_data = {
-                        'status': 'success',
-                        'message': 'Successfully logged in.',
-                        'token': token.decode(),
-                        # TODO: clean this up?
-                        'user': {
-                            'id': user.id,
-                            'name': user.name,
-                            # do we need this?
-                            'email': user.email,
-                            'token': token.decode(),
-                            'expires_in': exp,
-                        }
-                    }
-                    return make_response(jsonify(response_data)), 200
-            else:
-                response_data = {
-                    'status': 'fail',
-                    'message': 'User does not exist.'
-                }
-                return make_response(jsonify(response_data)), 404
-        except Exception as e:
-            print(e)
-            response_data = {
-                'status': 'fail',
-                'message': 'Try again'
-            }
-            return make_response(jsonify(response_data)), 500
-
-
-class UserAPI(MethodView):
-    """
-    User Resource
-    """
-    def get(self):
-        # get the auth token
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            try:
-                token = auth_header.split(" ")[1]
-            except IndexError:
-                response_data = {
-                    'status': 'fail',
-                    'message': 'Bearer token malformed.'
-                }
-                return make_response(jsonify(response_data)), 401
-        else:
-            token = ''
-        if token:
-            resp = User.decode_token(token)
-            if not isinstance(resp, str):
-                user = User.query.filter_by(id=resp).first()
+@auth_blueprint.route('/login', methods=['POST'])
+def login():
+    # get the post data
+    payload = request.get_json()
+    try:
+        # fetch the user data
+        user = User.query.filter_by(
+            email=payload.get('email')
+        ).first()
+        if user and bcrypt.check_password_hash(user.password, payload.get('password')):
+            # TODO stop abusing this function, it should just return one thing
+            token, exp = user.encode_token(user.id)
+            if token:
                 response_data = {
                     'status': 'success',
-                    'data': {
-                        'user_id': user.id,
+                    'message': 'Successfully logged in.',
+                    'token': token.decode(),
+                    # TODO: clean this up?
+                    'user': {
+                        'id': user.id,
+                        'name': user.name,
+                        # do we need this?
                         'email': user.email,
-                        'admin': user.admin,
-                        'registered_on': user.registered_on
+                        'token': token.decode(),
+                        'expires_in': exp,
                     }
                 }
                 return make_response(jsonify(response_data)), 200
+        else:
+            response_data = {
+                'status': 'fail',
+                'message': 'User does not exist.'
+            }
+            return make_response(jsonify(response_data)), 404
+    except Exception as e:
+        print(e)
+        response_data = {
+            'status': 'fail',
+            'message': 'Try again'
+        }
+        return make_response(jsonify(response_data)), 500
+
+
+@auth_blueprint.route('/logout', methods=['POST'])
+def logout():
+    # get auth token
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        token = auth_header.split(" ")[1]
+    else:
+        token = ''
+    if token:
+        resp = User.decode_token(token)
+        if not isinstance(resp, str):
+            # mark the token as blacklisted
+            blacklisted_token = BlacklistedToken(token=token)
+            try:
+                # insert the token
+                db.session.add(blacklisted_token)
+                db.session.commit()
+                response_data = {
+                    'status': 'success',
+                    'message': 'Successfully logged out.'
+                }
+                return make_response(jsonify(response_data)), 200
+            except Exception as e:
+                response_data = {
+                    'status': 'fail',
+                    'message': e
+                }
+                return make_response(jsonify(response_data)), 200
+        else:
             response_data = {
                 'status': 'fail',
                 'message': resp
             }
             return make_response(jsonify(response_data)), 401
-        else:
-            response_data = {
-                'status': 'fail',
-                'message': 'Provide a valid auth token.'
-            }
-            return make_response(jsonify(response_data)), 401
-
-
-class LogoutAPI(MethodView):
-    """
-    Logout Resource
-    """
-    def post(self):
-        # get auth token
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(" ")[1]
-        else:
-            token = ''
-        if token:
-            resp = User.decode_token(token)
-            if not isinstance(resp, str):
-                # mark the token as blacklisted
-                blacklisted_token = BlacklistedToken(token=token)
-                try:
-                    # insert the token
-                    db.session.add(blacklisted_token)
-                    db.session.commit()
-                    response_data = {
-                        'status': 'success',
-                        'message': 'Successfully logged out.'
-                    }
-                    return make_response(jsonify(response_data)), 200
-                except Exception as e:
-                    response_data = {
-                        'status': 'fail',
-                        'message': e
-                    }
-                    return make_response(jsonify(response_data)), 200
-            else:
-                response_data = {
-                    'status': 'fail',
-                    'message': resp
-                }
-                return make_response(jsonify(response_data)), 401
-        else:
-            response_data = {
-                'status': 'fail',
-                'message': 'Provide a valid auth token.'
-            }
-            return make_response(jsonify(response_data)), 403
-
-
-# define the API resources
-registration_view = RegisterAPI.as_view('register_api')
-login_view = LoginAPI.as_view('login_api')
-user_view = UserAPI.as_view('user_api')
-logout_view = LogoutAPI.as_view('logout_api')
-
-# add Rules for API Endpoints
-auth_blueprint.add_url_rule(
-    '/register',
-    view_func=registration_view,
-    methods=['POST']
-)
-auth_blueprint.add_url_rule(
-    '/login',
-    view_func=login_view,
-    methods=['POST']
-)
-auth_blueprint.add_url_rule(
-    '/status',
-    view_func=user_view,
-    methods=['GET']
-)
-auth_blueprint.add_url_rule(
-    '/logout',
-    view_func=logout_view,
-    methods=['POST']
-)
-
+    else:
+        response_data = {
+            'status': 'fail',
+            'message': 'Provide a valid auth token.'
+        }
+        return make_response(jsonify(response_data)), 403
 
 def generate_confirmation_token(email):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])

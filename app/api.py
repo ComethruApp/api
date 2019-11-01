@@ -14,14 +14,7 @@ def unauthorized(error):
     return jsonify({'status': 'fail', 'error': 'You don\'t have permission to do this.'}), 401
 
 def verify_token():
-    try:
-        token = request.headers.get('Authorization').split(" ")[1]
-        g.me = User.from_token(token)
-    except IndexError:
-        return jsonify({
-            'status': 'fail',
-            'message': 'Bearer token malformed.'
-        }), 401
+    g.me = User.from_token(request.headers.get('token'))
     if g.me is None:
         abort(401)
 
