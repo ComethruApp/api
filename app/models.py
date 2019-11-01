@@ -161,6 +161,9 @@ class Event(db.Model):
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
 
+    def hosted_by(self, user):
+        self.hosts.filter(hosts.c.host_id == user.id).count() > 0
+
     def json(self):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
