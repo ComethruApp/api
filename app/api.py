@@ -26,7 +26,6 @@ def get_user(user_id):
     if user is None:
         abort(404)
 
-
 @api_blueprint.route('/users/me')
 def get_me():
     return jsonify(g.me.json())

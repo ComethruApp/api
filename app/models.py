@@ -3,6 +3,7 @@ import datetime
 import jwt
 import hashlib
 import dateutil.parser
+import random
 
 
 followers = db.Table('followers',
@@ -26,7 +27,6 @@ class User(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
-    bio = db.Column(db.String(127), nullable=True)
 
     followed = db.relationship(
             'User', secondary=followers,
@@ -41,16 +41,15 @@ class User(db.Model):
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
-    def __init__(self, name, email, password, confirmed=False, school_id=1):
+    def __init__(self, name, email, password, school_id, confirmed=False):
         self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
             password, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
-        self.registered_on = datetime.datetime.now()
-        self.confirmed = confirmed
-        # Statically set to Yale
         self.school_id = school_id
+        self.confirmed = confirmed
+        self.registered_on = datetime.datetime.now()
 
     def encode_token(self, user_id):
         """
@@ -97,7 +96,6 @@ class User(db.Model):
             'email': self.email,
             'verified': self.verified,
             'avatar': self.avatar(),
-            'bio': self.bio,
         }
 
     def follow(self, user):
@@ -118,9 +116,6 @@ class User(db.Model):
         return user
 
 class BlacklistedToken(db.Model):
-    """
-    Token Model for storing JWT tokens
-    """
     __tablename__ = 'blacklisted_tokens'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -139,9 +134,6 @@ class BlacklistedToken(db.Model):
 
 
 class Event(db.Model):
-    """
-    Does it need that much explanation?
-    """
     __tablename__ = 'events'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -149,15 +141,11 @@ class Event(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.String(1024))
 
-    location_name = db.Column(db.String(127), nullable=False)
-    location_lat = db.Column(db.Float)
-    location_lon = db.Column(db.Float)
+    location = db.Column(db.String(127), nullable=False)
+    lat = db.Column(db.Float)
+    lon = db.Column(db.Float)
 
-    time_start = db.Column(db.DateTime, nullable=False)
-    time_end = db.Column(db.DateTime)
-
-    venmo = db.Column(db.String(32))
-
+    time = db.Column(db.DateTime, nullable=False)
 
     hosts = db.relationship(
         'User', secondary=hostships,
@@ -175,9 +163,15 @@ class Event(db.Model):
         self.registered_on = datetime.datetime.now()
 
     def json(self):
-        return {key: getattr(self, key) for key in ('id', 'name', 'description',
-                                                    'location_name', 'location_lat', 'location_lon',
-                                                    'time_start', 'time_end', 'venmo')}
+        raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
+                                                   'location_name', 'location_lat', 'location_lon',
+                                                   'time_start', 'time_end', 'venmo')}
+        raw.update({
+            'people': random.randint(0, 50),
+            'rating': random.randint(0, 100),
+        })
+        return raw
+
 
 class School(db.Model):
     __tablename__ = 'schools'

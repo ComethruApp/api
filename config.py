@@ -23,4 +23,3 @@ class Config(object):
 
     # mail accounts
     MAIL_DEFAULT_SENDER = 'hello@comethru.io'
-    #MAIL_DEBUG = True
