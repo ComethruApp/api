@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: fdc419aea959
+Revision ID: 4b9218a88b91
 Revises: 
-Create Date: 2019-10-30 10:47:18.245653
+Create Date: 2019-11-01 00:44:14.570738
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fdc419aea959'
+revision = '4b9218a88b91'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,12 +41,10 @@ def upgrade():
     sa.Column('name', sa.String(length=64), nullable=False),
     sa.Column('registered_on', sa.DateTime(), nullable=False),
     sa.Column('description', sa.String(length=1024), nullable=True),
-    sa.Column('location_name', sa.String(length=127), nullable=False),
-    sa.Column('location_lat', sa.Float(), nullable=True),
-    sa.Column('location_lon', sa.Float(), nullable=True),
-    sa.Column('time_start', sa.DateTime(), nullable=False),
-    sa.Column('time_end', sa.DateTime(), nullable=True),
-    sa.Column('venmo', sa.String(length=32), nullable=True),
+    sa.Column('location', sa.String(length=127), nullable=False),
+    sa.Column('lat', sa.Float(), nullable=True),
+    sa.Column('lng', sa.Float(), nullable=True),
+    sa.Column('time', sa.DateTime(), nullable=False),
     sa.Column('school_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['school_id'], ['schools.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -60,7 +58,6 @@ def upgrade():
     sa.Column('registered_on', sa.DateTime(), nullable=False),
     sa.Column('verified', sa.Boolean(), nullable=False),
     sa.Column('admin', sa.Boolean(), nullable=False),
-    sa.Column('bio', sa.String(length=127), nullable=True),
     sa.Column('school_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['school_id'], ['schools.id'], ),
     sa.PrimaryKeyConstraint('id'),
