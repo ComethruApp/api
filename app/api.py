@@ -25,6 +25,11 @@ def get_user(user_id):
     if user is None:
         abort(404)
 
+@api_blueprint.route('/users/search/<query>')
+def search_users(query):
+    users = User.query.filter(User.id != g.me.id, User.name.like('%' + query + '%')).all()
+    return jsonify([user.json() for user in users])
+
 @api_blueprint.route('/users/me')
 def get_me():
     return jsonify(g.me.json())
@@ -57,7 +62,8 @@ def delete_event(event_id):
         abort(404)
     if event.hosted_by(g.me):
         abort(401)
-    db.session.delete(me)
+    # FIXME: this fails because we haven't gotten rid of the hostships
+    db.session.delete(event)
     db.session.commit()
     return jsonify({
         'status': 'success',

@@ -7,13 +7,13 @@ import random
 
 
 followers = db.Table('followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('users.id'))
+    db.Column('follower_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+    db.Column('followed_id', db.Integer, db.ForeignKey('users.id'), nullable=False)
 )
 
 hostships = db.Table('hostships',
-    db.Column('host_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('event_id', db.Integer, db.ForeignKey('events.id'))
+    db.Column('user_id',  db.Integer, db.ForeignKey('users.id'),  nullable=False),
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False)
 )
 
 class User(db.Model):
@@ -34,10 +34,8 @@ class User(db.Model):
             secondaryjoin=(followers.c.followed_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     hosted = db.relationship(
-            'Event', secondary=hostships,
-            primaryjoin=(hostships.c.host_id == id),
-            secondaryjoin=(hostships.c.event_id == id),
-            backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+            'Event', secondary=hostships, passive_deletes=True,
+            backref=db.backref('hostships', lazy='subquery'), lazy=True)
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
@@ -149,9 +147,7 @@ class Event(db.Model):
 
     hosts = db.relationship(
         'User', secondary=hostships,
-        primaryjoin=(hostships.c.event_id == id),
-        secondaryjoin=(hostships.c.host_id == id),
-        backref=db.backref('hostships', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic')
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
@@ -162,10 +158,10 @@ class Event(db.Model):
         self.registered_on = datetime.datetime.now()
 
     def add_host(self, user):
-        self.hosts.add(user)
+        self.hosts.append(user)
 
     def hosted_by(self, user):
-        self.hosts.filter(self.hosts.c.host_id == user.id).count() > 0
+        self.hosts.filter(hostships.c.user_id == user.id).count() > 0
 
     def json(self):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
@@ -174,6 +170,7 @@ class Event(db.Model):
         raw.update({
             'people': random.randint(0, 50),
             'rating': random.randint(0, 100),
+            'hosts': [host.json() for host in self.hosts],
         })
         return raw
 

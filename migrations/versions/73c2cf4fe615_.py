@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: cf9dc64267a0
+Revision ID: 73c2cf4fe615
 Revises: 
-Create Date: 2019-11-01 16:40:46.050366
+Create Date: 2019-11-01 20:10:59.872857
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cf9dc64267a0'
+revision = '73c2cf4fe615'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -64,16 +64,16 @@ def upgrade():
     sa.UniqueConstraint('email')
     )
     op.create_table('followers',
-    sa.Column('follower_id', sa.Integer(), nullable=True),
-    sa.Column('followed_id', sa.Integer(), nullable=True),
+    sa.Column('follower_id', sa.Integer(), nullable=False),
+    sa.Column('followed_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['followed_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['follower_id'], ['users.id'], )
     )
     op.create_table('hostships',
-    sa.Column('host_id', sa.Integer(), nullable=True),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('event_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['event_id'], ['events.id'], ),
-    sa.ForeignKeyConstraint(['host_id'], ['users.id'], )
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], )
     )
     # ### end Alembic commands ###
 
