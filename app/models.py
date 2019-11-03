@@ -28,6 +28,10 @@ class User(db.Model):
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
+    lat = db.Column(db.Float, nullable=True)
+    lng = db.Column(db.Float, nullable=True)
+    current_event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+
     followed = db.relationship(
             'User', secondary=followers,
             primaryjoin=(followers.c.follower_id == id),
@@ -149,9 +153,12 @@ class Event(db.Model):
         'User', secondary=hostships,
         backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic')
 
+    # TODO: does attendee name make sense?
+    posts = db.relationship('User', backref='attendee', lazy='dynamic')
+
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
-    def __init__(self, raw):
+    def __init__(self, raw, school_id):
         self.time = dateutil.parser.parse(raw.pop('time', None))
         for field in raw:
             setattr(self, field, raw[field])
@@ -168,7 +175,7 @@ class Event(db.Model):
                                                    'location', 'lat', 'lng',
                                                    'time')}
         raw.update({
-            'people': random.randint(0, 50),
+            'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
             'hosts': [host.json() for host in self.hosts],
         })

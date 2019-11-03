@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
 from app.models import User, Event
+import geography
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -49,7 +50,7 @@ def get_event(event_id):
 @api_blueprint.route('/events', methods=['POST'])
 def create_event():
     data = request.get_json()
-    event = Event(data)
+    event = Event(data, school_id=g.me.school_id)
     event.add_host(g.me)
     db.session.add(event)
     db.session.commit()
@@ -69,3 +70,15 @@ def delete_event(event_id):
         'status': 'success',
         'message': 'Event deleted successfully.',
     }), 200
+
+
+@api_blueprint.route('/location/<float:lat>/<float:lng>', methods=['POST'])
+def update_location(lat, lng):
+    g.me.lat = lat
+    g.me.lng = lng
+    # TODO: this is massively inefficient
+    now = datetime.datetime.now()
+    for event in Event.query.filter(Event.time < now < Event.time + datetime.timedelta(hours=5)):
+        if geography.attending(lat, lng, Event.lat, Event.lng):
+            g.me.current_event_id = event.id
+    db.session.commit()
