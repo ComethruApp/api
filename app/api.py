@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
 from app.models import User, Event
-import geography
+from app.geography import attending
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -79,6 +79,6 @@ def update_location(lat, lng):
     # TODO: this is massively inefficient
     now = datetime.datetime.now()
     for event in Event.query.filter(Event.time < now < Event.time + datetime.timedelta(hours=5)):
-        if geography.attending(lat, lng, Event.lat, Event.lng):
+        if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
