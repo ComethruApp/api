@@ -86,7 +86,7 @@ def update_location():
 
 
 @api_blueprint.route('/friend/request/<user_id_to>', methods=['POST'])
-def friend_request_create(user_id_to):
+def friend_request(user_id_to):
     friendship = Friendship(user_id_from=g.me.id,
                             user_id_to=user_id_to,
                             confirmed=False)
@@ -95,4 +95,24 @@ def friend_request_create(user_id_to):
     return jsonify({
         'status': 'success',
         'message': 'Succesfully sent friend request!',
+    }), 201
+
+@api_blueprint.route('/friend/remove/<user_id>', methods=['POST'])
+def friend_remove(user_id):
+    """
+    Remove friend request or friendship.
+    """
+    friendship = Friendship.query.filter(Friendship.user_id_from == user_id and Friendship.user_id_to == g.me.id \
+                                      or Friendship.user_it_from == g.me.id and Friendship.user_it_to == user_id)
+    if friendship is None:
+        return jsonify({
+            'status': 'fail',
+            'message': 'Couldn\'t find a friend request from this person.',
+        }), 400
+
+    db.session.delete(friendship)
+    db.session.commit()
+    return jsonify({
+        'status': 'success',
+        'message': 'Succesfully removed friend.',
     }), 200

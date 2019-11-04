@@ -120,8 +120,8 @@ class User(db.Model):
 
 class Friendship(db.Model):
     __tablename__ = 'friendships'
-    user_id_from = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    user_id_to = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    user_id_from = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    user_id_to = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     confirmed = db.Column(db.Boolean, default=False)
 
 
