@@ -72,10 +72,11 @@ def delete_event(event_id):
     }), 200
 
 
-@api_blueprint.route('/location/<float:lat>/<float:lng>', methods=['POST'])
-def update_location(lat, lng):
-    g.me.lat = lat
-    g.me.lng = lng
+@api_blueprint.route('/location', methods=['POST'])
+def update_location():
+    payload = request.get_json()
+    g.me.lat = payload['lat']
+    g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     now = datetime.datetime.now()
     for event in Event.query.filter(Event.time < now < Event.time + datetime.timedelta(hours=5)):
