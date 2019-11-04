@@ -83,3 +83,16 @@ def update_location():
         if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
+
+
+@api_blueprint.route('/friend/request/<user_id_to>', methods=['POST'])
+def friend_request_create(user_id_to):
+    friendship = Friendship(user_id_from=g.me.id,
+                            user_id_to=user_id_to,
+                            confirmed=False)
+    db.session.add(friendship)
+    db.session.commit()
+    return jsonify({
+        'status': 'success',
+        'message': 'Succesfully sent friend request!',
+    }), 200
