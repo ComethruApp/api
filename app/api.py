@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
-from app.models import User, Event
+from app.models import User, Event, Friendship
 from app.geography import attending
 
 api_blueprint = Blueprint('api', __name__)
