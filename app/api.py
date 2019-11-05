@@ -28,7 +28,7 @@ def get_user(user_id):
 
 @api_blueprint.route('/users/search/<query>')
 def search_users(query):
-    users = User.query.filter(User.id != g.me.id, User.name.like('%' + query + '%')).all()
+    users = User.query.filter(User.id != g.me.id, User.name.ilike('%' + query + '%')).all()
     return jsonify([user.json() for user in users])
 
 @api_blueprint.route('/users/me')
