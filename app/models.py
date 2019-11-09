@@ -119,6 +119,9 @@ class User(db.Model):
 
         return friends_from + friends_to
 
+    def friend_requests(self):
+        requests = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == False).all()
+        return requests
 
     @staticmethod
     def from_token(token):
