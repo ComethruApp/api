@@ -111,6 +111,15 @@ class User(db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+    def friends(self):
+        # Friends where the current user initiated the request
+        friends_from = Friendship.query.filter_by(Friendship.user_id_from == self.id, Friendship.confirmed == True).all()
+        # Friends where the current user received the request
+        friends_to = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == True).all()
+
+        return friends_from + friends_to
+
+
     @staticmethod
     def from_token(token):
         user_id = User.decode_token(token)
@@ -121,7 +130,13 @@ class User(db.Model):
 class Friendship(db.Model):
     __tablename__ = 'friendships'
     user_id_from = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    user_from = db.relationship('User',
+                                primaryjoin=user_id_from == User.id,
+                                back_populates='friends_from')
     user_id_to = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    user_to = db.relationship('User',
+                              primaryjoin=user_id_to == User.id,
+                              back_populates='friends_to')
     confirmed = db.Column(db.Boolean, default=False)
 
 
