@@ -20,7 +20,7 @@ hostships = db.Table('hostships',
 friendships = db.Table('friendships',
     db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('confirmed', db.Integer, default=False),
+    db.Column('confirmed', db.Boolean, default=False),
 )
 
 class User(db.Model):
@@ -52,7 +52,7 @@ class User(db.Model):
     friended = db.relationship(
             'User', secondary=friendships,
             primaryjoin=(friendships.c.friender_id == id),
-            secondaryjoin=(friendships.c.friended_id == id),
+            secondaryjoin=(friendships.c.friended_id == id and friendships.c.confirmed == True),
             backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
@@ -127,17 +127,16 @@ class User(db.Model):
 
     def friends(self):
         """
-        friended = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == True).all()
-        frienders = Friendship.query.filter_by(Friendship.user_id_from == self.id, Friendship.confirmed == True).all()
+        Get a list of people you have friended and who have friended you whose friendships are confirmed.
         """
-        return self.friended.all() + self.frienders.all()
-
-        #return friends_from + friends_to
+        return self.friended.filter(friendships.c.confirmed == True).all() + \
+               self.frienders.filter(friendships.c.confirmed == True).all()
 
     def friend_requests(self):
-        #requests = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == False).all()
-        return []
-        return requests
+        """
+        Get a list of users who have sent friend requests to you that are not confirmed yet.
+        """
+        return self.frienders.filter(friendships.c.confirmed == False).all()
 
     def friend(self, user):
         if self.is_friends_with(user):
