@@ -101,15 +101,22 @@ def friend_request(target_id):
 
 @api_blueprint.route('/friends/accept/<friender_id>', methods=['POST'])
 def friend_accept(friender_id):
-    friendship = friendships.filter(friender_id=friender_id,
-                                    friended_id=g.me.id).first()
-    if friendship is None:
+    friendship = db.session.query().filter(friendships.c.friender_id == friender_id,
+                                           friendships.c.friended_id == g.me.id).update(dict(confirmed=True))
+
+    db.session.commit()
+    return jsonify({
+        'status': 'success',
+        'message': 'Accepted the request!',
+    }), 200
+    print(friendship.one())
+    if friendship.one() is None:
         return jsonify({
             'status': 'fail',
             'message': 'This person hasn\'t sent you a friend request.',
         }), 400
     else:
-        friendship.confirmed = True
+        friendship.update(dict(confirmed=True))
         db.session.commit()
         return jsonify({
             'status': 'success',
