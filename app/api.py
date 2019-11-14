@@ -88,7 +88,7 @@ def update_location():
 @api_blueprint.route('/friends/request/<user_id_to>', methods=['POST'])
 def friend_request(user_id_to):
     target = User.query.get(user_id_to)
-    g.me.friended.add(target)
+    g.me.friended.append(target)
     db.session.commit()
     return jsonify({
         'status': 'success',
