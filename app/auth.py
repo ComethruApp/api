@@ -85,7 +85,7 @@ def register():
             confirmation_token = generate_confirmation_token(user.email)
             confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
             html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-            subject = "Confirm your email for Comethru!"
+            subject = 'Confirm your email for Comethru!'
             send_email(user.email, subject, html)
 
             return jsonify({
@@ -155,7 +155,7 @@ def logout():
     # get auth token
     auth_header = request.headers.get('Authorization')
     if auth_header:
-        token = auth_header.split(" ")[1]
+        token = auth_header.split(' ')[1]
     else:
         token = ''
     if token:
