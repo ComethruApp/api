@@ -6,6 +6,7 @@ import dateutil.parser
 import random
 
 
+
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
     db.Column('followed_id', db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -14,6 +15,11 @@ followers = db.Table('followers',
 hostships = db.Table('hostships',
     db.Column('user_id',  db.Integer, db.ForeignKey('users.id'),  nullable=False),
     db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False)
+)
+
+friendships = db.Table('friendships',
+    db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('friended_id', db.Integer, db.ForeignKey('users.id'))
 )
 
 class User(db.Model):
@@ -37,9 +43,16 @@ class User(db.Model):
             primaryjoin=(followers.c.follower_id == id),
             secondaryjoin=(followers.c.followed_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
     hosted = db.relationship(
             'Event', secondary=hostships, passive_deletes=True,
             backref=db.backref('hostships', lazy='subquery'), lazy=True)
+
+    friended = db.relationship(
+            'User', secondary=friendships,
+            primaryjoin=(friendships.c.friender_id == id),
+            secondaryjoin=(friendships.c.friended_id == id),
+            backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
@@ -112,12 +125,13 @@ class User(db.Model):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
     def friends(self):
-        # Friends where the current user initiated the request
-        friends_from = Friendship.query.filter_by(Friendship.user_id_from == self.id, Friendship.confirmed == True).all()
-        # Friends where the current user received the request
-        friends_to = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == True).all()
+        """
+        friended = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == True).all()
+        frienders = Friendship.query.filter_by(Friendship.user_id_from == self.id, Friendship.confirmed == True).all()
+        """
+        return self.friended + self.frienders
 
-        return friends_from + friends_to
+        #return friends_from + friends_to
 
     def friend_requests(self):
         requests = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == False).all()
@@ -128,19 +142,6 @@ class User(db.Model):
         user_id = User.decode_token(token)
         user = User.query.get(user_id)
         return user
-
-
-class Friendship(db.Model):
-    __tablename__ = 'friendships'
-    user_id_from = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    user_from = db.relationship('User',
-                                primaryjoin=user_id_from == User.id,
-                                back_populates='friends_from')
-    user_id_to = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    user_to = db.relationship('User',
-                              primaryjoin=user_id_to == User.id,
-                              back_populates='friends_to')
-    confirmed = db.Column(db.Boolean, default=False)
 
 
 class BlacklistedToken(db.Model):

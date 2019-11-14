@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
-from app.models import User, Event, Friendship
+from app.models import User, Event
 from app.geography import attending
 
 api_blueprint = Blueprint('api', __name__)
@@ -87,10 +87,8 @@ def update_location():
 
 @api_blueprint.route('/friends/request/<user_id_to>', methods=['POST'])
 def friend_request(user_id_to):
-    friendship = Friendship(user_id_from=g.me.id,
-                            user_id_to=user_id_to,
-                            confirmed=False)
-    db.session.add(friendship)
+    target = User.query.get(user_id_to)
+    g.me.friended.add(target)
     db.session.commit()
     return jsonify({
         'status': 'success',
@@ -122,6 +120,7 @@ def get_friends():
     """
     Get friends of logged in user.
     """
+    return jsonify([])
     friends = g.me.friends()
     return jsonify([user.json() for user in friends]), 200
 
