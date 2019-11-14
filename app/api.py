@@ -88,12 +88,17 @@ def update_location():
 @api_blueprint.route('/friends/request/<user_id_to>', methods=['POST'])
 def friend_request(user_id_to):
     target = User.query.get(user_id_to)
-    g.me.friended.append(target)
-    db.session.commit()
-    return jsonify({
-        'status': 'success',
-        'message': 'Succesfully sent friend request!',
-    }), 201
+    if g.me.friend(target):
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': 'Succesfully sent friend request!',
+        }), 201
+    else:
+        return jsonify({
+            'status': 'fail',
+            'message': 'You\'re already friends with this person.',
+        }), 201
 
 @api_blueprint.route('/friends/remove/<user_id>', methods=['POST'])
 def friend_remove(user_id):
@@ -120,7 +125,6 @@ def get_friends():
     """
     Get friends of logged in user.
     """
-    return jsonify([])
     friends = g.me.friends()
     return jsonify([user.json() for user in friends]), 200
 

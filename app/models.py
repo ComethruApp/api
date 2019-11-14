@@ -129,13 +129,24 @@ class User(db.Model):
         friended = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == True).all()
         frienders = Friendship.query.filter_by(Friendship.user_id_from == self.id, Friendship.confirmed == True).all()
         """
-        return self.friended + self.frienders
+        return self.friended.all() + self.frienders.all()
 
         #return friends_from + friends_to
 
     def friend_requests(self):
-        requests = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == False).all()
+        #requests = Friendship.query.filter_by(Friendship.user_id_to == self.id, Friendship.confirmed == False).all()
+        return []
         return requests
+
+    def friend(self, user):
+        if self.is_friends_with(user):
+            return False
+        self.friended.append(user)
+        return True
+
+    def is_friends_with(self, user):
+        return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
+            or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
 
     @staticmethod
     def from_token(token):
