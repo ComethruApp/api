@@ -9,17 +9,18 @@ import random
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('followed_id', db.Integer, db.ForeignKey('users.id'), nullable=False)
+    db.Column('followed_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
 hostships = db.Table('hostships',
     db.Column('user_id',  db.Integer, db.ForeignKey('users.id'),  nullable=False),
-    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False)
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
 )
 
 friendships = db.Table('friendships',
     db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('friended_id', db.Integer, db.ForeignKey('users.id'))
+    db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('confirmed', db.Integer, default=False),
 )
 
 class User(db.Model):

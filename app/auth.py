@@ -138,14 +138,14 @@ def login():
         else:
             response_data = {
                 'status': 'fail',
-                'message': 'User does not exist.'
+                'message': 'Sorry, we couldn\'t recognize that email or password.',
             }
             return make_response(jsonify(response_data)), 404
     except Exception as e:
         print(e)
         response_data = {
             'status': 'fail',
-            'message': 'Try again'
+            'message': 'Try again',
         }
         return make_response(jsonify(response_data)), 500
 
