@@ -139,7 +139,6 @@ class User(db.Model):
         """
         Get a list of people you have friended and who have friended you whose friendships are confirmed.
         """
-        print(self.friended.all() + self.frienders.all())
         return self.friended.all() + self.frienders.all()
 
     def friend_requests(self):

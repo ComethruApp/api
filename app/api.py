@@ -107,30 +107,49 @@ def friend_accept(friender_id):
             'status': 'fail',
             'message': 'This person hasn\'t sent you a friend request.',
         }), 400
-    else:
-        friend = User.query.get(friender_id)
-        friend.friended.append(g.me)
-        g.me.friend_requests_received.remove(req)
-        db.session.commit()
+    friend = User.query.get(friender_id)
+    friend.friended.append(g.me)
+    g.me.friend_requests_received.remove(req)
+    db.session.commit()
+    return jsonify({
+        'status': 'success',
+        'message': 'Accepted the request!',
+    }), 200
+
+@api_blueprint.route('/friends/reject/<user_id>', methods=['POST'])
+def friend_reject(user_id):
+    """
+    Decline a friend request.
+    """
+    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == user_id).first()
+    if req is None:
         return jsonify({
-            'status': 'success',
-            'message': 'Accepted the request!',
-        }), 200
+            'status': 'fail',
+            'message': 'This person hasn\'t sent you a friend request.',
+        }), 400
+    g.me.friend_requests_received.remove(req)
+    db.session.commit()
+    return jsonify({
+        'status': 'success',
+        'message': 'Rejected request.',
+    }), 200
 
 @api_blueprint.route('/friends/remove/<user_id>', methods=['POST'])
 def friend_remove(user_id):
     """
     Remove friend request or friendship.
     """
-    friendship = Friendship.query.filter(Friendship.user_id_from == user_id and Friendship.user_id_to == g.me.id \
-                                      or Friendship.user_it_from == g.me.id and Friendship.user_it_to == user_id).first()
-    if friendship is None:
+    friendship_sent = g.me.friended.filter(friendships.c.friended_id == user_id).first()
+    friendship_received = g.me.frienders.filter(friendships.c.friender_id == user_id).first()
+    if friendship_sent is None and friendship_received is None:
         return jsonify({
             'status': 'fail',
             'message': 'Couldn\'t find a friend request from this person.',
         }), 400
-
-    db.session.delete(friendship)
+    if friendship_sent is not None:
+        g.me.friended.remove(friendship_sent)
+    if friendship_received is not None:
+        g.me.frienders.remove(friendship_received)
     db.session.commit()
     return jsonify({
         'status': 'success',
