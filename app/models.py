@@ -20,7 +20,11 @@ hostships = db.Table('hostships',
 friendships = db.Table('friendships',
     db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('confirmed', db.Boolean, default=False),
+)
+
+friend_requests = db.Table('friend_requests',
+    db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
 )
 
 class User(db.Model):
@@ -52,8 +56,14 @@ class User(db.Model):
     friended = db.relationship(
             'User', secondary=friendships,
             primaryjoin=(friendships.c.friender_id == id),
-            secondaryjoin=(friendships.c.friended_id == id and friendships.c.confirmed == True),
+            secondaryjoin=(friendships.c.friended_id == id),
             backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
+
+    friend_requests_sent = db.relationship(
+            'User', secondary=friend_requests,
+            primaryjoin=(friend_requests.c.friender_id == id),
+            secondaryjoin=(friend_requests.c.friended_id == id),
+            backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
 
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
@@ -129,22 +139,29 @@ class User(db.Model):
         """
         Get a list of people you have friended and who have friended you whose friendships are confirmed.
         """
-        return self.friended.filter(friendships.c.confirmed == True).all() + \
-               self.frienders.filter(friendships.c.confirmed == True).all()
+        print(self.friended.all() + self.frienders.all())
+        return self.friended.all() + self.frienders.all()
 
     def friend_requests(self):
         """
         Get a list of users who have sent friend requests to you that are not confirmed yet.
         """
-        return self.frienders.filter(friendships.c.confirmed == False).all()
+        return self.friend_requests_received.all()
 
-    def friend(self, user):
-        if self.is_friends_with(user):
+    def friend_request(self, user):
+        if self.has_friend_request(user) or self.is_friends_with(user):
             return False
-        self.friended.append(user)
+        self.friend_requests_sent.append(user)
         return True
 
-    def is_friends_with(self, user):
+    def has_friend_request(self, user) -> bool:
+        """
+        Return whether there is an active friend request (received or sent) to the given user.
+        """
+        return self.friend_requests_sent.filter(friend_requests.c.friended_id == user.id).count() > 0 \
+            or self.friend_requests_received.filter(friend_requests.c.friender_id == user.id).count() > 0
+
+    def is_friends_with(self, user) -> bool:
         return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
             or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
 

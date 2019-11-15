@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
-from app.models import User, Event, friendships
+from app.models import User, Event, friendships, friend_requests
 from app.geography import attending
 
 api_blueprint = Blueprint('api', __name__)
@@ -87,7 +87,7 @@ def update_location():
 @api_blueprint.route('/friends/request/<target_id>', methods=['POST'])
 def friend_request(target_id):
     target = User.query.get(target_id)
-    if g.me.friend(target):
+    if g.me.friend_request(target):
         db.session.commit()
         return jsonify({
             'status': 'success',
@@ -101,22 +101,16 @@ def friend_request(target_id):
 
 @api_blueprint.route('/friends/accept/<friender_id>', methods=['POST'])
 def friend_accept(friender_id):
-    friendship = db.session.query().filter(friendships.c.friender_id == friender_id,
-                                           friendships.c.friended_id == g.me.id).update(dict(confirmed=True))
-
-    db.session.commit()
-    return jsonify({
-        'status': 'success',
-        'message': 'Accepted the request!',
-    }), 200
-    print(friendship.one())
-    if friendship.one() is None:
+    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == friender_id).first()
+    if req is None:
         return jsonify({
             'status': 'fail',
             'message': 'This person hasn\'t sent you a friend request.',
         }), 400
     else:
-        friendship.update(dict(confirmed=True))
+        friend = User.query.get(friender_id)
+        friend.friended.append(g.me)
+        g.me.friend_requests_received.remove(req)
         db.session.commit()
         return jsonify({
             'status': 'success',
