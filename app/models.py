@@ -27,6 +27,11 @@ friend_requests = db.Table('friend_requests',
     db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
 )
 
+invitations = db.Table('invitations',
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+)
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -42,6 +47,8 @@ class User(db.Model):
     lat = db.Column(db.Float, nullable=True)
     lng = db.Column(db.Float, nullable=True)
     current_event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
     followed = db.relationship(
             'User', secondary=followers,
@@ -64,8 +71,6 @@ class User(db.Model):
             primaryjoin=(friend_requests.c.friender_id == id),
             secondaryjoin=(friend_requests.c.friended_id == id),
             backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
-
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
 
     def __init__(self, name, email, password, school_id, confirmed=False):
         self.name = name
@@ -207,10 +212,11 @@ class Event(db.Model):
         'User', secondary=hostships,
         backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic')
 
-    # TODO: does attendee name make sense?
-    posts = db.relationship('User', backref='attendee', lazy='dynamic')
-
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+
+    invitees = db.relationship(
+            'User', secondary=invitations,
+            backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, raw, school_id):
         self.time = dateutil.parser.parse(raw.pop('time', None))

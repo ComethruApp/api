@@ -71,6 +71,22 @@ def delete_event(event_id):
         'message': 'Event deleted successfully.',
     }), 200
 
+@api_blueprint.route('/events/<event_id>/invite/<user_id>', methods=['POST'])
+def create_invitation(event_id, user_id):
+    event = Event.query.get(event_id)
+    user = User.query.get(user_id)
+    if event.hosted_by(g.me):
+        event.invitees.append(user)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': 'Invited user.',
+        }), 201
+    else:
+        return jsonify({
+            'status': 'fail',
+            'message': 'You\'re not allowed to invite people to this event.',
+        }), 403
 
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
