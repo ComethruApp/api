@@ -56,6 +56,19 @@ def create_event():
     db.session.commit()
     return jsonify(event.json())
 
+@api_blueprint.route('/events/<event_id>', methods=['PUT'])
+def update_event(event_id):
+    data = request.get_json()
+    event = Event.query.get(event_id)
+    if event.hosted_by(g.me):
+        # TODO: evaluate security concerns...
+        for key, value in data.items():
+            setattr(event, key, value)
+        db.session.commit()
+        return jsonify(event.json()), 202
+    else:
+        abort(401)
+
 @api_blueprint.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get(event_id)
