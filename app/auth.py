@@ -64,11 +64,8 @@ def register():
             email = payload['email']
             school = School.get_by_email(email)
             if school is None:
-                return jsonify({
-                    'status': 'fail',
-                    'message': 'You must use a valid @yale.edu email address.'
-                    # 'message': 'You must use a valid .edu email address from a supported school.',
-                }), 401
+                # TODO: use non-Yale-specific message.
+                return fail('You must use a valid @yale.edu email address.'), 401
 
             user = User(
                 name=payload['name'],
@@ -88,22 +85,13 @@ def register():
             subject = 'Confirm your email for Comethru!'
             send_email(user.email, subject, html)
 
-            return jsonify({
-                'status': 'success',
-                'message': 'Check your email to confirm your address, then log in!',
-            }), 201
+            return succ('Check your email to confirm your address, then log in!'), 201
         except Exception as e:
             # TODO: eventually we should just return the error to the client
             raise e
-            return jsonify({
-                'status': 'fail',
-                'message': 'Some error occurred. Please try again. Contact the developers if this continues to happen.'
-            }), 500
+            return fail('Some error occurred. Please try again. Contact the developers if this continues to happen.'), 500
     else:
-        return jsonify({
-            'status': 'fail',
-            'message': 'User already exists. Please log in.',
-        }), 202
+        return fail('User already exists. Please log in.'), 202
 
 
 
@@ -134,20 +122,12 @@ def login():
                         'expires_in': exp,
                     }
                 }
-                return make_response(jsonify(response_data)), 200
+                return jsonify(response_data), 200
         else:
-            response_data = {
-                'status': 'fail',
-                'message': 'Sorry, we couldn\'t recognize that email or password.',
-            }
-            return make_response(jsonify(response_data)), 404
+            return fail('Sorry, we couldn\'t recognize that email or password.'), 404
     except Exception as e:
         print(e)
-        response_data = {
-            'status': 'fail',
-            'message': 'Try again',
-        }
-        return make_response(jsonify(response_data)), 500
+        return fail('Try again'), 500
 
 
 @auth_blueprint.route('/logout', methods=['POST'])
@@ -167,26 +147,10 @@ def logout():
                 # insert the token
                 db.session.add(blacklisted_token)
                 db.session.commit()
-                response_data = {
-                    'status': 'success',
-                    'message': 'Successfully logged out.'
-                }
-                return make_response(jsonify(response_data)), 200
+                return succ('Successfully logged out.'), 200
             except Exception as e:
-                response_data = {
-                    'status': 'fail',
-                    'message': e
-                }
-                return make_response(jsonify(response_data)), 200
+                return fail(e), 200
         else:
-            response_data = {
-                'status': 'fail',
-                'message': resp
-            }
-            return make_response(jsonify(response_data)), 401
+            return fail(resp), 401
     else:
-        response_data = {
-            'status': 'fail',
-            'message': 'Provide a valid auth token.'
-        }
-        return make_response(jsonify(response_data)), 403
+        return fail('Provide a valid auth token.'), 403
