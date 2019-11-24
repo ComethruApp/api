@@ -83,6 +83,13 @@ def delete_event(event_id):
     db.session.commit()
     return succ('Event deleted successfully.'), 200
 
+@api_blueprint.route('/events/<event_id>/invitees')
+def get_event_invitees(event_id):
+    event = Event.query.get(event_id)
+    if event is None:
+        abort(404)
+    return jsonify([user.json() for user in event.invitees])
+
 @api_blueprint.route('/events/<event_id>/invite/<user_id>', methods=['POST'])
 def create_invitation(event_id, user_id):
     event = Event.query.get(event_id)
