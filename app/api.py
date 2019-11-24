@@ -83,14 +83,14 @@ def delete_event(event_id):
     db.session.commit()
     return succ('Event deleted successfully.'), 200
 
-@api_blueprint.route('/events/<event_id>/invitees')
+@api_blueprint.route('/events/<event_id>/invites')
 def get_event_invitees(event_id):
     event = Event.query.get(event_id)
     if event is None:
         abort(404)
     return jsonify([user.json() for user in event.invitees])
 
-@api_blueprint.route('/events/<event_id>/invite/<user_id>', methods=['POST'])
+@api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def create_invitation(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
@@ -101,16 +101,16 @@ def create_invitation(event_id, user_id):
     else:
         return fail('You\'re not allowed to invite people to this event.'), 403
 
-@api_blueprint.route('/events/<event_id>/invite/<user_id>', methods=['DELETE'])
+@api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def rescind(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
     if event.hosted_by(g.me):
         event.invitees.delete(user)
         db.session.commit()
-        return succ('Invited user.'), 201
+        return succ('Rescinded user.'), 200
     else:
-        return fail('You\'re not allowed to invite people to this event.'), 403
+        return fail('You\'re not allowed to manage invitations for this event.'), 403
 
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
@@ -144,6 +144,7 @@ def friend_accept(friender_id):
     db.session.commit()
     return succ('Accepted the request!'), 200
 
+# TODO: should this maybe use the DELETE verb?
 @api_blueprint.route('/friends/reject/<user_id>', methods=['POST'])
 def friend_reject(user_id):
     """
