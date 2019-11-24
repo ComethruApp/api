@@ -101,6 +101,17 @@ def create_invitation(event_id, user_id):
     else:
         return fail('You\'re not allowed to invite people to this event.'), 403
 
+@api_blueprint.route('/events/<event_id>/invite/<user_id>', methods=['DELETE'])
+def rescind(event_id, user_id):
+    event = Event.query.get(event_id)
+    user = User.query.get(user_id)
+    if event.hosted_by(g.me):
+        event.invitees.delete(user)
+        db.session.commit()
+        return succ('Invited user.'), 201
+    else:
+        return fail('You\'re not allowed to invite people to this event.'), 403
+
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json()
