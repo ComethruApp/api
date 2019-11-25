@@ -200,4 +200,4 @@ def get_friend_requests():
     Get friend requests that have been sent to the current user.
     """
     friend_requests = g.me.friend_requests()
-    return jsonify([user.json() for user in friend_requests])
+    return jsonify([user.json(g.me) for user in friend_requests])

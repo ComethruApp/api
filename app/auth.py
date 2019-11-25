@@ -85,13 +85,13 @@ def register():
             subject = 'Confirm your email for Comethru!'
             send_email(user.email, subject, html)
 
-            return succ('Check your email to confirm your address, then log in!'), 201
+            return succ('Check your email to confirm your address, then log in!', 201)
         except Exception as e:
             # TODO: eventually we should just return the error to the client
             raise e
-            return fail('Some error occurred. Please try again. Contact the developers if this continues to happen.'), 500
+            return fail('Some error occurred. Please try again. Contact the developers if this continues to happen.', 500)
     else:
-        return fail('User already exists. Please log in.'), 202
+        return fail('User already exists. Please log in.', 202)
 
 
 
