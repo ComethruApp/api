@@ -65,7 +65,7 @@ def register():
             school = School.get_by_email(email)
             if school is None:
                 # TODO: use non-Yale-specific message.
-                return fail('You must use a valid @yale.edu email address.'), 401
+                return fail('You must use a valid @yale.edu email address.', 401)
 
             user = User(
                 name=payload['name'],
@@ -124,10 +124,10 @@ def login():
                 }
                 return jsonify(response_data), 200
         else:
-            return fail('Sorry, we couldn\'t recognize that email or password.'), 404
+            return fail('Sorry, we couldn\'t recognize that email or password.', 404)
     except Exception as e:
         print(e)
-        return fail('Try again'), 500
+        return fail('Try again', 500)
 
 
 @auth_blueprint.route('/logout', methods=['POST'])
@@ -147,10 +147,10 @@ def logout():
                 # insert the token
                 db.session.add(blacklisted_token)
                 db.session.commit()
-                return succ('Successfully logged out.'), 200
+                return succ('Successfully logged out.')
             except Exception as e:
                 return fail(e), 200
         else:
             return fail(resp), 401
     else:
-        return fail('Provide a valid auth token.'), 403
+        return fail('Provide a valid auth token.', 403)
