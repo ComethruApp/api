@@ -245,16 +245,28 @@ class Event(db.Model):
         self.hosts.append(user)
 
     def hosted_by(self, user):
-        self.hosts.filter(hostships.c.user_id == user.id).count() > 0
+        return self.hosts.filter(hostships.c.user_id == user.id).count() > 0
 
-    def json(self):
+    def invite(self, user):
+        if self.is_invited(user):
+            return False
+        self.invitees.append(user)
+        return True
+
+    def is_invited(self, user) -> bool:
+        """
+        Return whether there is an invitation to this event for the given user.
+        """
+        return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
+
+    def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
                                                    'time')}
         raw.update({
             'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
-            'hosts': [host.json() for host in self.hosts],
+            'hosts': [host.json(me) for host in self.hosts],
         })
         return raw
 
