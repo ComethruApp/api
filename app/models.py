@@ -170,12 +170,17 @@ class User(db.Model):
         self.friend_requests_sent.append(user)
         return True
 
+    def has_received_friend_request(self, user) -> bool:
+        return self.friend_requests_received.filter(friend_requests.c.friender_id == user.id).count() > 0
+
+    def has_sent_friend_request(self, user) -> bool:
+        return self.friend_requests_sent.filter(friend_requests.c.friended_id == user.id).count() > 0
+
     def has_friend_request(self, user) -> bool:
         """
         Return whether there is an active friend request (received or sent) to the given user.
         """
-        return self.friend_requests_sent.filter(friend_requests.c.friended_id == user.id).count() > 0 \
-            or self.friend_requests_received.filter(friend_requests.c.friender_id == user.id).count() > 0
+        return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
     def is_friends_with(self, user) -> bool:
         return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
