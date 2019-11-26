@@ -6,6 +6,7 @@ from flask_mail import Message
 
 from app import app, db, bcrypt, mail
 from app.models import User, School, BlacklistedToken
+from app.util import succ, fail
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -61,7 +62,12 @@ def register():
     user = User.query.filter_by(email=payload.get('email')).first()
     if not user:
         try:
-            email = payload['email']
+            email = payload['email'].lower()
+            with open('resources/email_blacklist.txt') as f:
+                # TODO: should we just keep this in memory continuously rather than reading it every time?
+                email_blacklist = f.read().split('\n')
+                if email in email_blacklist:
+                    return fail('Sorry, a student email address is required to register.', 401)
             school = School.get_by_email(email)
             if school is None:
                 # TODO: use non-Yale-specific message.
