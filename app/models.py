@@ -277,11 +277,12 @@ class Event(db.Model):
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
-                                                   'time')}
+                                                   'time', 'open', 'transitive_invites')}
         raw.update({
             # TODO: don't get time every repetition
             'happening_now': self.time < datetime.datetime.now() < self.time + EVENT_LENGTH,
             'mine': self.hosted_by(me),
+            'invited_me': self.is_invited(me),
             'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
             'hosts': [host.json(me) for host in self.hosts],
