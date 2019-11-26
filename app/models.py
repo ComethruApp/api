@@ -255,6 +255,7 @@ class Event(db.Model):
 
     open = db.Column(db.Boolean, default=True)
     transitive_invites = db.Column(db.Boolean, default=False)
+    capacity = db.Column(db.Integer)
 
     time = db.Column(db.DateTime, nullable=False)
 
