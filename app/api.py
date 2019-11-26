@@ -39,6 +39,24 @@ def search_users(query):
                               User.name.ilike('%' + query + '%')).all()
     return jsonify([user.json(g.me) for user in users])
 
+@api_blueprint.route('/users/<user_id>/block', methods=['POST'])
+def block_user(user_id):
+    user = User.query.get(user_id)
+    if g.me.block(user):
+        db.session.commit()
+        return succ('Succesfully blocked user.')
+    else:
+        return fail('You\'ve already blocked this person.')
+
+@api_blueprint.route('/users/<user_id>/unblock', methods=['POST'])
+def unblock_user(user_id):
+    user = User.query.get(user_id)
+    if g.me.unblock(user):
+        db.session.commit()
+        return succ('Succesfully unblocked user.')
+    else:
+        return fail('You haven\'t blocked this person.')
+
 @api_blueprint.route('/events')
 def get_events():
     return jsonify([event.json(g.me) for event in Event.get_feed(g.me.school_id)])

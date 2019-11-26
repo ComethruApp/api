@@ -18,18 +18,23 @@ hostships = db.Table('hostships',
 )
 
 friendships = db.Table('friendships',
-    db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('friender_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+    db.Column('friended_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
 friend_requests = db.Table('friend_requests',
-    db.Column('friender_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('friended_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('friender_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+    db.Column('friended_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
 invitations = db.Table('invitations',
-    db.Column('event_id', db.Integer, db.ForeignKey('events.id')),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+)
+
+blocks = db.Table('blocks',
+    db.Column('blocker_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+    db.Column('blocked_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
 class User(db.Model):
@@ -71,6 +76,12 @@ class User(db.Model):
             primaryjoin=(friend_requests.c.friender_id == id),
             secondaryjoin=(friend_requests.c.friended_id == id),
             backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
+
+    blocked = db.relationship(
+            'User', secondary=blocks,
+            primaryjoin=(blocks.c.blocker_id == id),
+            secondaryjoin=(blocks.c.blocked_id == id),
+            backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, name, email, password, school_id, confirmed=False):
         self.name = name
@@ -144,13 +155,32 @@ class User(db.Model):
     def follow(self, user):
         if not self.is_following(user):
             self.followed.append(user)
+            return True
+        return False
 
     def unfollow(self, user):
         if self.is_following(user):
             self.followed.remove(user)
+            return True
+        return False
 
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+    def block(self, user):
+        if not self.has_blocked(user):
+            self.blocked.append(user)
+            return True
+        return False
+
+    def unblock(self, user):
+        if self.has_blocked(user):
+            self.blocked.remove(user)
+            return True
+        return False
+
+    def has_blocked(self, user):
+        return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
 
     def friends(self):
         """
