@@ -223,6 +223,9 @@ class Event(db.Model):
     lat = db.Column(db.Float)
     lng = db.Column(db.Float)
 
+    open = db.Column(db.Boolean, default=True)
+    transitive_invites = db.Column(db.Boolean, default=False)
+
     time = db.Column(db.DateTime, nullable=False)
 
     hosts = db.relationship(
@@ -264,6 +267,8 @@ class Event(db.Model):
     def get_feed(school_id):
         now = datetime.datetime.now()
         return Event.query.filter(
+            # TODO: also get private events in one query
+            Event.open == True,
             Event.school_id == school_id,
             Event.time < now,
             now - EVENT_LENGTH < Event.time,
