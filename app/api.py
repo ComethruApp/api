@@ -95,7 +95,8 @@ def get_event_invitees(event_id):
 def create_invitation(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
-    if event.hosted_by(g.me):
+    # TODO: store who created an invitation, and allow users who aren't hosts to only remove their invitations
+    if event.transitive_invites or event.hosted_by(g.me):
         # Check out that intuitive syntax. Glorious. Like washing machines.
         if event.invite(user):
             db.session.commit()
@@ -109,6 +110,7 @@ def create_invitation(event_id, user_id):
 def rescind(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
+    # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
     if event.hosted_by(g.me):
         event.invitees.delete(user)
         db.session.commit()
@@ -128,18 +130,18 @@ def update_location():
             g.me.current_event_id = event.id
     db.session.commit()
 
-@api_blueprint.route('/friends/request/<target_id>', methods=['POST'])
-def friend_request(target_id):
-    target = User.query.get(target_id)
+@api_blueprint.route('/friends/request/<user_id>', methods=['POST'])
+def friend_request(user_id):
+    target = User.query.get(user_id)
     if g.me.friend_request(target):
         db.session.commit()
         return succ('Succesfully sent friend request!')
     else:
         return fail('You\'re already friends with this person.')
 
-@api_blueprint.route('/friends/cancel/<target_id>', methods=['POST'])
-def friend_cancel(target_id):
-    friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == target_id).first()
+@api_blueprint.route('/friends/cancel/<user_id>', methods=['POST'])
+def friend_cancel(user_id):
+    friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == user_id).first()
     if friend_request_sent is None:
         return fail('Couldn\'t find a friend request to this person.')
     if friend_request_sent is not None:
