@@ -263,11 +263,10 @@ class Event(db.Model):
     @staticmethod
     def get_feed(school_id):
         now = datetime.datetime.now()
-        offset = datetime.timedelta(hours=10)
         return Event.query.filter(
             Event.school_id == school_id,
             Event.time < now,
-            now - offset < Event.time,
+            now - EVENT_LENGTH < Event.time,
         ).all()
 
     def json(self, me):
@@ -275,8 +274,8 @@ class Event(db.Model):
                                                    'location', 'lat', 'lng',
                                                    'time')}
         raw.update({
-            'happening_now':
-            'mine': self.hosted_by(me),
+            # TODO: don't get time every repetition
+            'happening_now': self.time < datetime.datetime.now() < self.time + EVENT_LENGTH,
             'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
             'hosts': [host.json(me) for host in self.hosts],
