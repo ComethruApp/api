@@ -276,6 +276,7 @@ class Event(db.Model):
         raw.update({
             # TODO: don't get time every repetition
             'happening_now': self.time < datetime.datetime.now() < self.time + EVENT_LENGTH,
+            'mine': self.hosted_by(me),
             'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
             'hosts': [host.json(me) for host in self.hosts],
