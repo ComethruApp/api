@@ -5,7 +5,7 @@ import hashlib
 import dateutil.parser
 import random
 
-
+EVENT_LENGTH = datetime.timedelta(hours=10)
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
@@ -240,6 +240,7 @@ class Event(db.Model):
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.now()
+        self.school_id = school_id
 
     def add_host(self, user):
         self.hosts.append(user)
@@ -259,11 +260,23 @@ class Event(db.Model):
         """
         return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
 
+    @staticmethod
+    def get_feed(school_id):
+        now = datetime.datetime.now()
+        offset = datetime.timedelta(hours=10)
+        return Event.query.filter(
+            Event.school_id == school_id,
+            Event.time < now,
+            now - offset < Event.time,
+        ).all()
+
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
                                                    'time')}
         raw.update({
+            'happening_now':
+            'mine': self.hosted_by(me),
             'people': random.randint(0, 100),
             'rating': random.randint(0, 100),
             'hosts': [host.json(me) for host in self.hosts],

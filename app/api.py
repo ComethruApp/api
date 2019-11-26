@@ -41,8 +41,7 @@ def search_users(query):
 
 @api_blueprint.route('/events')
 def get_events():
-    events = Event.query.all()
-    return jsonify([event.json(g.me) for event in events])
+    return jsonify([event.json(g.me) for event in Event.get_feed(g.me.school_id)])
 
 @api_blueprint.route('/events/<event_id>')
 def get_event(event_id):
