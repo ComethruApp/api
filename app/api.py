@@ -57,6 +57,17 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
+@api_blueprint.route('/users/me/events', methods=['GET'])
+def get_my_events():
+    events = g.me.hosted.all()
+    return jsonify([event.json(g.me) for event in events])
+
+@api_blueprint.route('/users/<user_id>/events', methods=['GET'])
+def get_user_events(user_id):
+    user = User.query.get(user_id)
+    events = user.hosted.all()
+    return jsonify([event.json(g.me) for event in events])
+
 @api_blueprint.route('/events')
 def get_events():
     return jsonify([event.json(g.me) for event in Event.get_feed(g.me.school_id)])
