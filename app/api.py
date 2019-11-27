@@ -25,7 +25,7 @@ def verify_token():
 @api_blueprint.route('/heartbeat')
 def heartbeat():
     return jsonify({
-        'maintenance': bool(os.environ.get('MAINTENANCE', 0)),
+        'maintenance': bool(os.environ.get('MAINTENANCE', False)),
         'min_version': 0,
     })
 
