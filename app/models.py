@@ -316,7 +316,7 @@ class Event(db.Model):
             'mine': self.hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': random.randint(0, 100),
-            'rating': random.randint(0, 100) / 10,
+            'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
         })
         return raw

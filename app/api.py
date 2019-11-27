@@ -3,6 +3,7 @@ from app import db
 from app.models import User, Event, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
+import os
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -20,6 +21,13 @@ def verify_token():
     g.me = User.from_token(request.args.get('token'))
     if g.me is None:
         abort(401)
+
+@api_blueprint.route('/heartbeat')
+def heartbeat():
+    return jsonify({
+        'maintenance': os.environ.get('MAINTENANCE', 0),
+        'min_version': 0,
+    })
 
 @api_blueprint.route('/users/<user_id>')
 def get_user(user_id):
