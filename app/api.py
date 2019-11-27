@@ -170,7 +170,6 @@ def update_location():
     g.me.lat = payload['lat']
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
-    now = datetime.datetime.now()
     for event in g.me.get_feed():
         if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
