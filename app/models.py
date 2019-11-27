@@ -232,7 +232,7 @@ class BlacklistedToken(db.Model):
 
     def __init__(self, token):
         self.token = token
-        self.blacklisted_on = datetime.datetime.now()
+        self.blacklisted_on = datetime.datetime.utcnow()
 
     @staticmethod
     def check_blacklist(auth_token):
@@ -270,10 +270,11 @@ class Event(db.Model):
             backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, raw, school_id):
+        print(raw['time'])
         self.time = dateutil.parser.parse(raw.pop('time', None))
         for field in raw:
             setattr(self, field, raw[field])
-        self.registered_on = datetime.datetime.now()
+        self.registered_on = datetime.datetime.utcnow()
         self.school_id = school_id
 
     def add_host(self, user):
@@ -296,7 +297,7 @@ class Event(db.Model):
 
     @staticmethod
     def get_feed(school_id):
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         return Event.query.filter(
             # TODO: also get private events in one query
             Event.open == True,
@@ -309,9 +310,10 @@ class Event(db.Model):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
                                                    'time', 'open', 'transitive_invites')}
+        print(datetime.datetime.now())
         raw.update({
             # TODO: don't get time every repetition
-            'happening_now': self.time < datetime.datetime.now() < self.time + EVENT_LENGTH,
+            'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
             'mine': self.hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': random.randint(0, 100),
