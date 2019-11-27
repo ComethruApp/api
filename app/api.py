@@ -171,7 +171,7 @@ def update_location():
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     now = datetime.datetime.now()
-    for event in Event.query.filter(Event.time < now < Event.time + datetime.timedelta(hours=5)):
+    for event in g.me.get_feed():
         if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
