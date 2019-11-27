@@ -271,7 +271,6 @@ class Event(db.Model):
             backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, raw, school_id):
-        print(raw['time'])
         self.time = dateutil.parser.parse(raw.pop('time', None))
         for field in raw:
             setattr(self, field, raw[field])
@@ -310,8 +309,7 @@ class Event(db.Model):
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
-                                                   'time', 'open', 'transitive_invites')}
-        print(datetime.datetime.now())
+                                                   'time', 'open', 'transitive_invites', 'capacity')}
         raw.update({
             # TODO: don't get time every repetition
             'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
