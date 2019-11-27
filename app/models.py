@@ -295,6 +295,7 @@ class Event(db.Model):
         """
         return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
 
+    # TODO: feels like this should be a method of user?
     @staticmethod
     def get_feed(school_id):
         now = datetime.datetime.utcnow()
