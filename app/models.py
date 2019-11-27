@@ -216,6 +216,7 @@ class User(db.Model):
         return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
             or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
 
+
     @staticmethod
     def from_token(token):
         user_id = User.decode_token(token)
