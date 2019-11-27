@@ -72,7 +72,13 @@ def get_user_events(user_id):
 
 @api_blueprint.route('/events')
 def get_events():
-    return jsonify([event.json(g.me) for event in Event.get_feed(g.me.school_id)])
+    events = Event.get_feed(g.me.school_id)
+    return jsonify([event.json(g.me) for event in events])
+
+@api_blueprint.route('/users/me/invites')
+def get_my_invites():
+    events = g.me.invited_to
+    return jsonify([event.json(g.me) for event in events])
 
 @api_blueprint.route('/events/<event_id>')
 def get_event(event_id):
