@@ -166,6 +166,7 @@ def rescind(event_id, user_id):
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
+    print(payload)
     g.me.lat = payload['lat']
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
@@ -174,6 +175,7 @@ def update_location():
         if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
+    return succ('Location received! :)')
 
 @api_blueprint.route('/friends/request/<user_id>', methods=['POST'])
 def friend_request(user_id):
