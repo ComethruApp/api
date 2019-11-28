@@ -94,7 +94,7 @@ def get_my_events():
 @api_blueprint.route('/users/<user_id>/events')
 def get_user_events(user_id):
     user = User.query.get(user_id)
-    events = reversed(user.hosted.all())
+    events = reversed(user.hosted)
     return jsonify([event.json(g.me) for event in events])
 
 @api_blueprint.route('/events/<event_id>/friends')
