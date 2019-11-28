@@ -19,6 +19,7 @@ def unauthorized(error):
 @api_blueprint.before_request
 def verify_token():
     g.me = User.from_token(request.args.get('token'))
+    print(g.me)
     if g.me is None:
         abort(401)
 
@@ -171,7 +172,7 @@ def update_location():
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     for event in Event.get_feed(g.me.school_id):
-        if attending(payload['lat'], payload['lng'], Event.lat, Event.lng):
+        if attending(payload['lat'], payload['lng'], event.lat, event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
     return succ('Location received! :)')
