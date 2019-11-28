@@ -170,7 +170,7 @@ def update_location():
     g.me.lat = payload['lat']
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
-    for event in Event.get_feed():
+    for event in Event.get_feed(g.me.school_id):
         if attending(lat, lng, Event.lat, Event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
