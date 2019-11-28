@@ -216,6 +216,9 @@ class User(db.Model):
         return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
             or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
 
+    def friends_at_event(self, event_id):
+        return self.friended.filter(User.current_event_id == event_id).all() \
+             + self.frienders.filter(User.current_event_id == event_id).all()
 
     @staticmethod
     def from_token(token):
