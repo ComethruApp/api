@@ -68,11 +68,11 @@ def unblock_user(user_id):
 @api_blueprint.route('/users/me/events/current')
 def get_my_current_event():
     if g.me.current_event_id is None:
-        return jsonify({})
+        return jsonify(None)
     event = Event.query.get(g.me.current_event_id)
     if event is None:
         # TODO: this feels very weird! Look into it!
-        return jsonify({})
+        return jsonify(None)
     return jsonify(event.json(g.me))
 
 @api_blueprint.route('/users/<user_id>/events/current')
@@ -82,10 +82,10 @@ def get_user_current_event(user_id):
     if not g.me.is_friends_with(user):
         return fail('You must be friends with this user to view their location.', 401)
     if user.current_event_id is None:
-        return jsonify({})
+        return jsonify(None)
     event = Event.query.get(user.current_event_id)
     if event is None:
-        return jsonify({})
+        return jsonify(None)
     return jsonify(event.json(g.me))
 
 @api_blueprint.route('/users/me/events')
