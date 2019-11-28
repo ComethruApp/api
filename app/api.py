@@ -100,7 +100,7 @@ def get_user_events(user_id):
 @api_blueprint.route('/events/<event_id>/friends')
 def get_friends_at_event(event_id):
     users = g.me.friends_at_event(event_id)
-    return jsonify([user.json(g.me) for event in events])
+    return jsonify([user.json(g.me) for user in users])
 
 @api_blueprint.route('/events')
 def get_events():
