@@ -71,7 +71,7 @@ def get_my_current_event():
     if event is None:
         # TODO: this feels very weird! Look into it!
         return jsonify({})
-    return jsonify(event.json())
+    return jsonify(event.json(g.me))
 
 @api_blueprint.route('/users/<user_id>/events/current')
 def get_user_current_event(user_id):
@@ -82,7 +82,7 @@ def get_user_current_event(user_id):
     event = Event.query.get(user.current_event_id)
     if event is None:
         return jsonify({})
-    return jsonify(event.json())
+    return jsonify(event.json(g.me))
 
 @api_blueprint.route('/users/me/events', methods=['GET'])
 def get_my_events():
