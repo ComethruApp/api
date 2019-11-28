@@ -77,7 +77,7 @@ def get_my_current_event():
 def get_user_current_event(user_id):
     # TODO: this is so repetitive stop
     user = User.query.get(user_id)
-    if not g.me.is_friend(user):
+    if not g.me.is_friends_with(user):
         return fail('You must be friends with this user to view their location.', 401)
     event = Event.query.get(user.current_event_id)
     if event is None:
