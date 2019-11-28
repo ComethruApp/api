@@ -65,6 +65,25 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
+@api_blueprint.route('/users/me/events/current')
+def get_my_current_event():
+    event = Event.query.get(g.me.current_event_id)
+    if event is None:
+        # TODO: this feels very weird! Look into it!
+        return jsonify({})
+    return jsonify(event.json())
+
+@api_blueprint.route('/users/<user_id>/events/current')
+def get_user_current_event(user_id):
+    # TODO: this is so repetitive stop
+    user = User.query.get(user_id)
+    if not g.me.is_friend(user):
+        return fail('You must be friends with this user to view their location.', 401)
+    event = Event.query.get(user.current_event_id)
+    if event is None:
+        return jsonify({})
+    return jsonify(event.json())
+
 @api_blueprint.route('/users/me/events', methods=['GET'])
 def get_my_events():
     # TODO: this is garbage to reverse it on the Python side, fix this!!
@@ -166,7 +185,6 @@ def rescind(event_id, user_id):
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
-    print(payload)
     g.me.lat = payload['lat']
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
