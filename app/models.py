@@ -270,6 +270,10 @@ class Event(db.Model):
             'User', secondary=invitations,
             backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
 
+    # People currently at event
+    # TODO: this name implies a list of all people that have attended. Maybe differentiate between the two?
+    #attendees = db.relationship('User', backref='current_event', lazy='dynamic')
+
     def __init__(self, raw, school_id):
         self.time = dateutil.parser.parse(raw.pop('time', None))
         for field in raw:
@@ -316,7 +320,7 @@ class Event(db.Model):
             'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
             'mine': self.hosted_by(me),
             'invited_me': self.is_invited(me),
-            'people': random.randint(0, 100),
+            'people': User.query.filter_by(User.current_event_id == self.id).count(),
             'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
         })

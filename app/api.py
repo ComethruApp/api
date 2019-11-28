@@ -19,7 +19,6 @@ def unauthorized(error):
 @api_blueprint.before_request
 def verify_token():
     g.me = User.from_token(request.args.get('token'))
-    print(g.me)
     if g.me is None:
         abort(401)
 
