@@ -320,7 +320,7 @@ class Event(db.Model):
             'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
             'mine': self.hosted_by(me),
             'invited_me': self.is_invited(me),
-            'people': User.query.filter_by(User.current_event_id == self.id).count(),
+            'people': User.query.filter(User.current_event_id == self.id).count(),
             'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
         })
