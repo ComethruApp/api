@@ -197,6 +197,7 @@ def update_location():
     g.me.lat = payload['lat']
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
+    g.me.current_event_id = None
     for event in Event.get_feed(g.me.school_id):
         if attending(payload['lat'], payload['lng'], event.lat, event.lng):
             g.me.current_event_id = event.id
