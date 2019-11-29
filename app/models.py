@@ -112,10 +112,9 @@ class User(db.Model):
     def avatar(self):
         return hashlib.md5(self.email.encode('utf-8')).hexdigest()
 
-    @staticmethod
-    def search():
-        return User.query.filter(User.school_id == g.me.school_id,
-                                 User.id != g.me.id,
+    def search(self):
+        return User.query.filter(User.school_id == self.school_id,
+                                 User.id != self.id,
                                  User.name.ilike('%' + query + '%')).all()
 
     @staticmethod
