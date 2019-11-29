@@ -131,11 +131,12 @@ class User(db.Model):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
 
-    def json(self, me):
+    def json(self, me, event=None):
         """
         Generate JSON representation of this user.
 
         :param me: User currently logged in. Necessary to generate boolean fields describing relationships.
+        :param event: optionally specify an event to check invitation status for.
         """
         return {
             'id': self.id,
@@ -150,6 +151,7 @@ class User(db.Model):
             'has_received_friend_request': self.has_received_friend_request(me),
             # Is the current user friends with this user?
             'is_friend': self.is_friends_with(me),
+            'invited': event.is_invited(self) if event else None,
         }
 
     def follow(self, user):
