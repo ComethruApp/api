@@ -113,6 +113,12 @@ class User(db.Model):
         return hashlib.md5(self.email.encode('utf-8')).hexdigest()
 
     @staticmethod
+    def search():
+        return User.query.filter(User.school_id == g.me.school_id,
+                                 User.id != g.me.id,
+                                 User.name.ilike('%' + query + '%')).all()
+
+    @staticmethod
     def decode_token(token):
         """
         Validates the auth token

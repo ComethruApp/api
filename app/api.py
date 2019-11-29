@@ -42,9 +42,7 @@ def get_me():
 
 @api_blueprint.route('/users/search/<query>')
 def search_users(query):
-    users = User.query.filter(User.school_id == g.me.school_id,
-                              User.id != g.me.id,
-                              User.name.ilike('%' + query + '%')).all()
+    users = User.search()
     return jsonify([user.json(g.me) for user in users])
 
 @api_blueprint.route('/users/<user_id>/block', methods=['POST'])
