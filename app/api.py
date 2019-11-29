@@ -189,6 +189,16 @@ def rescind(event_id, user_id):
     else:
         return fail('You\'re not allowed to manage invitations for this event.', 403)
 
+@api_blueprint.route('/events/<event_id>/invites/search/<query>')
+def search_users_given_event(event_id, query):
+    """
+    Search users and also return data about their invitation status to a given event.
+    TODO: This feels like a really nasty hack and there's gotta be a better way to do this...
+    """
+    users = User.search()
+    event = Event.query.get(event_id)
+    return jsonify([user.json(g.me, event) for user in users])
+
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
