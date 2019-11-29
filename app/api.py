@@ -42,7 +42,7 @@ def get_me():
 
 @api_blueprint.route('/users/search/<query>')
 def search_users(query):
-    users = g.me.search()
+    users = g.me.search(query)
     return jsonify([user.json(g.me) for user in users])
 
 @api_blueprint.route('/users/<user_id>/block', methods=['POST'])
@@ -195,7 +195,7 @@ def search_users_for_event(event_id, query):
     Search users and also return data about their invitation status to a given event.
     TODO: This feels like a really nasty hack and there's gotta be a better way to do this...
     """
-    users = g.me.search()
+    users = g.me.search(query)
     event = Event.query.get(event_id)
     return jsonify([user.json(g.me, event) for user in users])
 
