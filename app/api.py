@@ -183,7 +183,7 @@ def rescind(event_id, user_id):
     user = User.query.get(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
     if event.hosted_by(g.me):
-        event.invitees.delete(user)
+        event.invitees.remove(user)
         db.session.commit()
         return succ('Rescinded user.', 200)
     else:
