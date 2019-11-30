@@ -160,7 +160,7 @@ def get_event_invitees(event_id):
     event = Event.query.get(event_id)
     if event is None:
         abort(404)
-    return jsonify([user.json(g.me) for user in event.invitees])
+    return jsonify([user.json(g.me, event) for user in event.invitees])
 
 @api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def create_invitation(event_id, user_id):
