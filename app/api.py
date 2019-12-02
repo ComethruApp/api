@@ -134,7 +134,7 @@ def create_event():
 def update_event(event_id):
     data = request.get_json(g.me)
     event = Event.query.get(event_id)
-    if event.hosted_by(g.me):
+    if event.is_hosted_by(g.me):
         # TODO: evaluate security concerns...
         for key, value in data.items():
             setattr(event, key, value)
@@ -148,7 +148,7 @@ def delete_event(event_id):
     event = Event.query.get(event_id)
     if event is None:
         abort(404)
-    if event.hosted_by(g.me):
+    if event.is_hosted_by(g.me):
         abort(401)
     # FIXME: this fails because we haven't gotten rid of the hostships
     db.session.delete(event)
@@ -167,7 +167,7 @@ def create_invitation(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
     # TODO: store who created an invitation, and allow users who aren't hosts to only remove their invitations
-    if event.transitive_invites or event.hosted_by(g.me):
+    if event.transitive_invites or event.is_hosted_by(g.me):
         # Check out that intuitive syntax. Glorious. Like washing machines.
         if event.invite(user):
             db.session.commit()
@@ -182,7 +182,7 @@ def rescind(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
-    if event.hosted_by(g.me):
+    if event.is_hosted_by(g.me):
         event.invitees.remove(user)
         db.session.commit()
         return succ('Rescinded user.', 200)

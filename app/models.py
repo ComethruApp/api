@@ -41,42 +41,41 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    registered_on = db.Column(db.DateTime, nullable=False)
+
+    # User information
     name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     confirmed = db.Column(db.Boolean, default=False)
-    registered_on = db.Column(db.DateTime, nullable=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Columns related to current position
     lat = db.Column(db.Float, nullable=True)
     lng = db.Column(db.Float, nullable=True)
     current_event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
 
+    # Relationships
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
-
     followed = db.relationship(
             'User', secondary=followers,
             primaryjoin=(followers.c.follower_id == id),
             secondaryjoin=(followers.c.followed_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-
     hosted = db.relationship(
             'Event', secondary=hostships, passive_deletes=True,
             backref=db.backref('hostships', lazy='subquery'), lazy=True)
-
     friended = db.relationship(
             'User', secondary=friendships,
             primaryjoin=(friendships.c.friender_id == id),
             secondaryjoin=(friendships.c.friended_id == id),
             backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
-
     friend_requests_sent = db.relationship(
             'User', secondary=friend_requests,
             primaryjoin=(friend_requests.c.friender_id == id),
             secondaryjoin=(friend_requests.c.friended_id == id),
             backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
-
     blocked = db.relationship(
             'User', secondary=blocks,
             primaryjoin=(blocks.c.blocker_id == id),
@@ -126,8 +125,8 @@ class User(db.Model):
         """
         try:
             payload = jwt.decode(token, app.config.get('SECRET_KEY'))
-            is_blacklisted_token = BlacklistedToken.check_blacklist(token)
-            if is_blacklisted_token:
+            is_blacklisted = BlacklistedToken.check_blacklist(token)
+            if is_blacklisted:
                 return 'Token blacklisted. Please log in again.'
             else:
                 return payload['sub']
@@ -136,28 +135,12 @@ class User(db.Model):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
 
-    def json(self, me, event=None):
-        """
-        Generate JSON representation of this user.
+    @staticmethod
+    def from_token(token):
+        user_id = User.decode_token(token)
+        user = User.query.get(user_id)
+        return user
 
-        :param me: User currently logged in. Necessary to generate boolean fields describing relationships.
-        :param event: optionally specify an event to check invitation status for.
-        """
-        return {
-            'id': self.id,
-            'name': self.name,
-            'email': self.email,
-            'verified': self.verified,
-            'avatar': self.avatar(),
-            # Is this user me?
-            'is_me': (self == me),
-            # Did this user request/send a friend request from/to this user?
-            'has_sent_friend_request': self.has_sent_friend_request(me),
-            'has_received_friend_request': self.has_received_friend_request(me),
-            # Is the current user friends with this user?
-            'is_friend': self.is_friends_with(me),
-            'invited': event.is_invited(self) if event else None,
-        }
 
     def follow(self, user):
         if not self.is_following(user):
@@ -174,26 +157,37 @@ class User(db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+
     def block(self, user):
-        if not self.has_blocked(user):
+        if not self.is_blocking(user):
             self.blocked.append(user)
             return True
         return False
 
     def unblock(self, user):
-        if self.has_blocked(user):
+        if self.is_blocking(user):
             self.blocked.remove(user)
             return True
         return False
 
-    def has_blocked(self, user):
+    def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
+
 
     def friends(self):
         """
         Get a list of people you have friended and who have friended you whose friendships are confirmed.
         """
         return self.friended.all() + self.frienders.all()
+
+    def is_friends_with(self, user) -> bool:
+        return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
+            or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
+
+    def friends_at_event(self, event_id):
+        return self.friended.filter(User.current_event_id == event_id).all() \
+             + self.frienders.filter(User.current_event_id == event_id).all()
+
 
     def friend_requests(self):
         """
@@ -219,19 +213,29 @@ class User(db.Model):
         """
         return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
-    def is_friends_with(self, user) -> bool:
-        return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
-            or self.frienders.filter(friendships.c.friender_id == user.id).count() > 0
 
-    def friends_at_event(self, event_id):
-        return self.friended.filter(User.current_event_id == event_id).all() \
-             + self.frienders.filter(User.current_event_id == event_id).all()
+    def json(self, me, event=None):
+        """
+        Generate JSON representation of this user.
 
-    @staticmethod
-    def from_token(token):
-        user_id = User.decode_token(token)
-        user = User.query.get(user_id)
-        return user
+        :param me: User currently logged in. Necessary to generate boolean fields describing relationships.
+        :param event: optionally specify an event to check invitation status for.
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'verified': self.verified,
+            'avatar': self.avatar(),
+            # Is this user me?
+            'is_me': (self == me),
+            # Did this user request/send a friend request from/to this user?
+            'has_sent_friend_request': self.has_sent_friend_request(me),
+            'has_received_friend_request': self.has_received_friend_request(me),
+            # Is the current user friends with this user?
+            'is_friend': self.is_friends_with(me),
+            'invited': event.is_invited(self) if event else None,
+        }
 
 
 class BlacklistedToken(db.Model):
@@ -256,8 +260,10 @@ class Event(db.Model):
     __tablename__ = 'events'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(64), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
+
+    # Metadata
+    name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(1024))
 
     location = db.Column(db.String(127), nullable=False)
@@ -269,20 +275,16 @@ class Event(db.Model):
     capacity = db.Column(db.Integer)
 
     time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
 
+    # Relationships
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
         'User', secondary=hostships,
         backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic')
-
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
-
     invitees = db.relationship(
             'User', secondary=invitations,
             backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
-
-    # People currently at event
-    # TODO: this name implies a list of all people that have attended. Maybe differentiate between the two?
-    #attendees = db.relationship('User', backref='current_event', lazy='dynamic')
 
     def __init__(self, raw, school_id):
         self.time = dateutil.parser.parse(raw.pop('time', None))
@@ -294,10 +296,15 @@ class Event(db.Model):
     def add_host(self, user):
         self.hosts.append(user)
 
-    def hosted_by(self, user):
+    def is_hosted_by(self, user) -> bool:
         return self.hosts.filter(hostships.c.user_id == user.id).count() > 0
 
-    def invite(self, user):
+    def invite(self, user) -> bool:
+        """
+        Send an invite to a given user if they aren't already invited.
+        :param user: User to invite.
+        :return: whether user was was invited, i.e. if they weren't already invited.
+        """
         if self.is_invited(user):
             return False
         self.invitees.append(user)
@@ -328,7 +335,7 @@ class Event(db.Model):
         raw.update({
             # TODO: don't get time every repetition
             'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
-            'mine': self.hosted_by(me),
+            'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': User.query.filter(User.current_event_id == self.id).count(),
             'rating': random.randint(0, 50) / 10,
@@ -341,15 +348,22 @@ class School(db.Model):
     __tablename__ = 'schools'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
     name = db.Column(db.String(64), unique=True)
     nickname = db.Column(db.String(16), unique=True)
-    color = db.Column(db.String(6), nullable=True)
     domain = db.Column(db.String(32), unique=True)
+    color = db.Column(db.String(6), nullable=True)
 
+    # Relationships
     students = db.relationship('User', backref='users', lazy='dynamic')
     events = db.relationship('Event', backref='events', lazy='dynamic')
 
     @staticmethod
-    def get_by_email(email):
+    def get_by_email(email: str) -> School:
+        """
+        Given a raw email, extract the domain and find a School with that domain.
+        :param email: email to get school for.
+        :return: School with that email domain, or None if no school uses that domain.
+        """
         domain = email.split('@')[-1]
         return School.query.filter_by(domain=domain).first()
