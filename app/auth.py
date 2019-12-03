@@ -68,7 +68,7 @@ def register():
                 email_blacklist = f.read().split('\n')
                 if email in email_blacklist:
                     return fail('Sorry, a student email address is required to register.', 401)
-            school = School.get_by_email(email)
+            school = School.from_email(email)
             if school is None:
                 # TODO: use non-Yale-specific message.
                 return fail('You must use a valid @yale.edu email address.', 401)

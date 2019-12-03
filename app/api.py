@@ -31,9 +31,7 @@ def heartbeat():
 
 @api_blueprint.route('/users/<user_id>')
 def get_user(user_id):
-    user = User.query.get(user_id)
-    if user is None:
-        abort(404)
+    user = User.query.get_or_404(user_id)
     return jsonify(user.json(g.me))
 
 @api_blueprint.route('/users/me')
@@ -116,9 +114,7 @@ def get_my_invites():
 
 @api_blueprint.route('/events/<event_id>')
 def get_event(event_id):
-    event = Event.query.get(event_id)
-    if event is None:
-        abort(404)
+    event = Event.query.get_or_404(event_id)
     return jsonify(event.json(g.me))
 
 @api_blueprint.route('/events', methods=['POST'])
@@ -133,7 +129,7 @@ def create_event():
 @api_blueprint.route('/events/<event_id>', methods=['PUT'])
 def update_event(event_id):
     data = request.get_json(g.me)
-    event = Event.query.get(event_id)
+    event = Event.query.get_or_404(event_id)
     if event.is_hosted_by(g.me):
         # TODO: evaluate security concerns...
         for key, value in data.items():
@@ -145,9 +141,7 @@ def update_event(event_id):
 
 @api_blueprint.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
-    event = Event.query.get(event_id)
-    if event is None:
-        abort(404)
+    event = Event.query.get_or_404(event_id)
     if event.is_hosted_by(g.me):
         abort(401)
     # FIXME: this fails because we haven't gotten rid of the hostships
@@ -157,15 +151,13 @@ def delete_event(event_id):
 
 @api_blueprint.route('/events/<event_id>/invites')
 def get_event_invitees(event_id):
-    event = Event.query.get(event_id)
-    if event is None:
-        abort(404)
+    event = Event.query.get_or_404(event_id)
     return jsonify([user.json(g.me, event) for user in event.invitees])
 
 @api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def create_invitation(event_id, user_id):
-    event = Event.query.get(event_id)
-    user = User.query.get(user_id)
+    event = Event.query.get_or_404(event_id)
+    user = User.query.get_or_404(user_id)
     # TODO: store who created an invitation, and allow users who aren't hosts to only remove their invitations
     if event.transitive_invites or event.is_hosted_by(g.me):
         # Check out that intuitive syntax. Glorious. Like washing machines.
@@ -175,7 +167,7 @@ def create_invitation(event_id, user_id):
         else:
             return fail('User already invited.')
     else:
-        return fail('You\'re not allowed to invite people to this event.', 403)
+        abort(401)
 
 @api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def rescind(event_id, user_id):
@@ -187,7 +179,7 @@ def rescind(event_id, user_id):
         db.session.commit()
         return succ('Rescinded user.', 200)
     else:
-        return fail('You\'re not allowed to manage invitations for this event.', 403)
+        abort(401)
 
 @api_blueprint.route('/events/<event_id>/invites/search/<query>')
 def search_users_for_event(event_id, query):
@@ -206,16 +198,16 @@ def update_location():
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     g.me.current_event_id = None
-    for event in Event.get_feed(g.me.school_id):
+    for event in g.me.get_feed():
         if attending(payload['lat'], payload['lng'], event.lat, event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
-    return succ('Location received! :)')
+    return succ('Location received!')
 
 @api_blueprint.route('/friends/request/<user_id>', methods=['POST'])
 def friend_request(user_id):
-    target = User.query.get(user_id)
-    if g.me.friend_request(target):
+    user = User.query.get_or_404(user_id)
+    if g.me.friend_request(user):
         db.session.commit()
         return succ('Succesfully sent friend request!')
     else:
