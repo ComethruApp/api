@@ -107,11 +107,6 @@ def get_events():
     events = g.me.feed()
     return jsonify([event.json(g.me) for event in events])
 
-@api_blueprint.route('/users/me/invites')
-def get_my_invites():
-    events = g.me.invited_to
-    return jsonify([event.json(g.me) for event in events])
-
 @api_blueprint.route('/events/<event_id>')
 def get_event(event_id):
     event = Event.query.get_or_404(event_id)

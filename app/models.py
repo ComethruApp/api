@@ -211,17 +211,21 @@ class User(db.Model):
 
     def feed(self):
         now = datetime.datetime.utcnow()
-        events = Event.query.filter(
-            # TODO: also get private events in one query
+        closed_events = self.invited_to.filter(
+            Event.open == False,
+        )
+        open_events = Event.query.filter(
             Event.open == True,
             Event.school_id == self.school_id,
-            Event.time < now,
         )
+        events = closed_events.union(open_events)
         # Filter out events that are over
         events = events.filter(
+            Event.time < now,
             Event.ended == False,
             now - EVENT_LENGTH < Event.time,
         )
+        events = events.order_by(Event.open)
         return events.all()
 
     def json(self, me, event=None):
