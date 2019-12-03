@@ -288,8 +288,8 @@ class Event(db.Model):
     transitive_invites = db.Column(db.Boolean, default=False)
     capacity = db.Column(db.Integer)
 
-    time = db.Column(db.DateTime(timezone=True), nullable=False)
-    end_time = db.Column(db.DateTime(timezone=True), nullable=True)
+    time = db.Column(db.DateTime(), nullable=False)
+    end_time = db.Column(db.DateTime(), nullable=True)
     ended = db.Column(db.Boolean, default=False)
 
     # Relationships
