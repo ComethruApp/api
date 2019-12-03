@@ -62,9 +62,6 @@ class User(db.Model):
             primaryjoin=(followers.c.follower_id == id),
             secondaryjoin=(followers.c.followed_id == id),
             backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    hosted = db.relationship(
-            'Event', secondary=hostships, passive_deletes=True,
-            backref=db.backref('hostships', lazy='subquery'), lazy=True)
     friended = db.relationship(
             'User', secondary=friendships,
             primaryjoin=(friendships.c.friender_id == id),
@@ -213,6 +210,9 @@ class User(db.Model):
         closed_events = self.invited_to.filter(
             Event.open == False,
         )
+        closed_events = closed_events.union(self.hosted.filter(
+            Event.open == False,
+        ))
         open_events = Event.query.filter(
             Event.open == True,
             Event.school_id == self.school_id,
@@ -297,7 +297,7 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
         'User', secondary=hostships,
-        backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic'
+        backref=db.backref('hosted', lazy='dynamic', cascade="all, delete"), lazy='dynamic'
     )
     invitees = db.relationship(
         'User', secondary=invitations,
