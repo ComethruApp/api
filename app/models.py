@@ -288,8 +288,8 @@ class Event(db.Model):
     transitive_invites = db.Column(db.Boolean, default=False)
     capacity = db.Column(db.Integer)
 
-    time = db.Column(db.DateTime, nullable=False)
-    end_time = db.Column(db.DateTime, nullable=True)
+    time = db.Column(db.DateTime(timezone=True), nullable=False)
+    end_time = db.Column(db.DateTime(timezone=True), nullable=True)
     ended = db.Column(db.Boolean, default=False)
 
     # Relationships
@@ -304,7 +304,8 @@ class Event(db.Model):
     )
 
     def __init__(self, raw, school_id):
-        self.time = dateutil.parser.parse(raw.pop('time', None))
+        self.time = datetime.datetime.fromisoformat(raw.pop('time'))
+        self.time = self.time.astimezone(datetime.timezone.utc)
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.utcnow()
