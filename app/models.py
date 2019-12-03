@@ -1,8 +1,6 @@
 from app import app, db, bcrypt
 import datetime
 import jwt
-import hashlib
-import dateutil.parser
 import random
 
 EVENT_LENGTH = datetime.timedelta(hours=10)
@@ -47,6 +45,7 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    avatar = db.Column(db.String(120), nullable=True, default='')
     confirmed = db.Column(db.Boolean, default=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
@@ -107,9 +106,6 @@ class User(db.Model):
             app.config.get('SECRET_KEY'),
             algorithm='HS256'
         ), payload['exp']
-
-    def avatar(self):
-        return hashlib.md5(self.email.encode('utf-8')).hexdigest()
 
     def search(self, query: str):
         return User.query.filter(User.school_id == self.school_id,
@@ -240,7 +236,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'verified': self.verified,
-            'avatar': self.avatar(),
+            'avatar': self.avatar,
             # Is this user me?
             'is_me': (self == me),
             # Did this user request/send a friend request from/to this user?
@@ -288,8 +284,8 @@ class Event(db.Model):
     transitive_invites = db.Column(db.Boolean, default=False)
     capacity = db.Column(db.Integer)
 
-    time = db.Column(db.DateTime(), nullable=False)
-    end_time = db.Column(db.DateTime(), nullable=True)
+    time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
     ended = db.Column(db.Boolean, default=False)
 
     # Relationships
