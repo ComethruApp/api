@@ -213,8 +213,7 @@ class User(db.Model):
         """
         return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
-
-    def feed():
+    def feed(self):
         now = datetime.datetime.utcnow()
         events = Event.query.filter(
             # TODO: also get private events in one query
@@ -224,7 +223,7 @@ class User(db.Model):
         )
         # Filter out events that are over
         events = events.filter(
-            ended == False,
+            Event.ended == False,
             now - EVENT_LENGTH < Event.time,
         )
         return events.all()
@@ -297,10 +296,12 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
         'User', secondary=hostships,
-        backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic')
+        backref=db.backref('hostships', lazy='dynamic', cascade="all, delete"), lazy='dynamic'
+    )
     invitees = db.relationship(
-            'User', secondary=invitations,
-            backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
+        'User', secondary=invitations,
+        backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
+    )
 
     def __init__(self, raw, school_id):
         self.time = dateutil.parser.parse(raw.pop('time', None))

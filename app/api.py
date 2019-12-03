@@ -104,7 +104,7 @@ def get_friends_at_event(event_id):
 
 @api_blueprint.route('/events')
 def get_events():
-    events = Event.get_feed(g.me.school_id)
+    events = g.me.feed()
     return jsonify([event.json(g.me) for event in events])
 
 @api_blueprint.route('/users/me/invites')
@@ -198,7 +198,7 @@ def update_location():
     g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     g.me.current_event_id = None
-    for event in g.me.get_feed():
+    for event in g.me.feed():
         if attending(payload['lat'], payload['lng'], event.lat, event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
