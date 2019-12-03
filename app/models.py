@@ -210,7 +210,6 @@ class User(db.Model):
         return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
     def feed(self):
-        now = datetime.datetime.utcnow()
         closed_events = self.invited_to.filter(
             Event.open == False,
         )
@@ -220,11 +219,13 @@ class User(db.Model):
         )
         events = closed_events.union(open_events)
         # Filter out events that are over
+        now = datetime.datetime.utcnow()
         events = events.filter(
             Event.time < now,
             Event.ended == False,
             now - EVENT_LENGTH < Event.time,
         )
+        # Put private events first
         events = events.order_by(Event.open)
         return events.all()
 
@@ -340,7 +341,8 @@ class Event(db.Model):
                                                    'time', 'open', 'transitive_invites', 'capacity')}
         raw.update({
             # TODO: don't get time every repetition
-            'happening_now': self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH,
+            'happening_now': not self.ended \
+                             and (self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': User.query.filter(User.current_event_id == self.id).count(),

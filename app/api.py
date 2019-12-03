@@ -129,24 +129,32 @@ def create_event():
 def update_event(event_id):
     data = request.get_json(g.me)
     event = Event.query.get_or_404(event_id)
-    if event.is_hosted_by(g.me):
-        # TODO: evaluate security concerns...
-        for key, value in data.items():
-            setattr(event, key, value)
-        db.session.commit()
-        return jsonify(event.json(g.me)), 202
-    else:
-        abort(401)
+    if not event.is_hosted_by(g.me):
+        abort(403)
+    # TODO: evaluate security concerns...
+    for key, value in data.items():
+        setattr(event, key, value)
+    db.session.commit()
+    return jsonify(event.json(g.me)), 202
 
 @api_blueprint.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
-    if event.is_hosted_by(g.me):
-        abort(401)
+    if not event.is_hosted_by(g.me):
+        abort(403)
     # FIXME: this fails because we haven't gotten rid of the hostships
     db.session.delete(event)
     db.session.commit()
     return succ('Event deleted successfully.')
+
+@api_blueprint.route('/events/<event_id>/end', methods=['POST'])
+def end_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if not event.is_hosted_by(g.me):
+        abort(403)
+    event.ended = True
+    db.session.commit()
+    return succ('Event ended successfully.')
 
 @api_blueprint.route('/events/<event_id>/invites')
 def get_event_invitees(event_id):
