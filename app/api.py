@@ -14,7 +14,11 @@ def not_found_error(error):
 
 @api_blueprint.errorhandler(401)
 def unauthorized(error):
-    return fail('You don\'t have permission to do this.', 401)
+    return fail('You\'re not authorized to perform this action.', 401)
+
+@api_blueprint.errorhandler(403)
+def forbidden(error):
+    return fail('You don\'t have permission to do this.', 403)
 
 @api_blueprint.before_request
 def verify_token():
