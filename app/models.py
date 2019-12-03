@@ -291,6 +291,7 @@ class Event(db.Model):
 
     time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=True)
+    ended = db.Column(db.Boolean, default=False)
 
     # Relationships
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
@@ -330,18 +331,6 @@ class Event(db.Model):
         Return whether there is an invitation to this event for the given user.
         """
         return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
-
-    # TODO: feels like this should be a method of user?
-    @staticmethod
-    def get_feed(school_id):
-        now = datetime.datetime.utcnow()
-        return Event.query.filter(
-            # TODO: also get private events in one query
-            Event.open == True,
-            Event.school_id == school_id,
-            Event.time < now,
-            now - EVENT_LENGTH < Event.time,
-        ).all()
 
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
