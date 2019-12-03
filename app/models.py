@@ -214,6 +214,21 @@ class User(db.Model):
         return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
 
+    def feed():
+        now = datetime.datetime.utcnow()
+        events = Event.query.filter(
+            # TODO: also get private events in one query
+            Event.open == True,
+            Event.school_id == self.school_id,
+            Event.time < now,
+        )
+        # Filter out events that are over
+        events = events.filter(
+            ended == False,
+            now - EVENT_LENGTH < Event.time,
+        )
+        return events.all()
+
     def json(self, me, event=None):
         """
         Generate JSON representation of this user.
