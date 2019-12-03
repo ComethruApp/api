@@ -363,7 +363,7 @@ class School(db.Model):
     events = db.relationship('Event', backref='events', lazy='dynamic')
 
     @staticmethod
-    def get_by_email(email: str) -> School:
+    def from_email(email):
         """
         Given a raw email, extract the domain and find a School with that domain.
         :param email: email to get school for.
