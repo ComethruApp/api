@@ -1,4 +1,5 @@
 from app import app, db, bcrypt
+from sqlalchemy import desc
 import datetime
 import jwt
 import random
@@ -103,6 +104,11 @@ class User(db.Model):
             app.config.get('SECRET_KEY'),
             algorithm='HS256'
         ), payload['exp']
+
+    def events_hosted(self):
+        # TODO: the only reason "events_" is in the name of this function is because "hosted" conflicts with the
+        # backref name that it uses... find a way to be cleaner about that.
+        return self.hosted.order_by(desc(Event.time)).all()
 
     def search(self, query: str):
         users = User.query.filter(User.school_id == self.school_id,

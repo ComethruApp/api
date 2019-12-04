@@ -90,15 +90,13 @@ def get_user_current_event(user_id):
 
 @api_blueprint.route('/users/me/events')
 def get_my_events():
-    # TODO: this is garbage to reverse it on the Python side, fix this!!
-    # It's not returned as an AppenderBaseQuery for some reason?
-    events = reversed(g.me.hosted.all())
+    events = g.me.events_hosted()
     return jsonify([event.json(g.me) for event in events])
 
 @api_blueprint.route('/users/<user_id>/events')
 def get_user_events(user_id):
-    user = User.query.get(user_id)
-    events = reversed(user.hosted.all())
+    user = User.query.get_or_404(user_id)
+    events = User.events_hosted()
     return jsonify([event.json(g.me) for event in events])
 
 @api_blueprint.route('/events/<event_id>/friends')
