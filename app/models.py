@@ -336,14 +336,17 @@ class Event(db.Model):
         """
         return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
 
+    def happening_now(self):
+        # TODO: don't get time every repetition
+        now = datetime.datetime.utcnow()
+        return (not self.ended) and (self.time < now < self.time + EVENT_LENGTH)
+
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
                                                    'time', 'open', 'transitive_invites', 'capacity')}
         raw.update({
-            # TODO: don't get time every repetition
-            'happening_now': not self.ended \
-                             and (self.time < datetime.datetime.utcnow() < self.time + EVENT_LENGTH),
+            'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': User.query.filter(User.current_event_id == self.id).count(),
