@@ -78,6 +78,7 @@ class User(db.Model):
             primaryjoin=(blocks.c.blocker_id == id),
             secondaryjoin=(blocks.c.blocked_id == id),
             backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
+    votes = db.relationship('Vote', backref='event', lazy=True)
 
     def __init__(self, name, email, password, school_id, confirmed=False):
         self.name = name
@@ -238,6 +239,22 @@ class User(db.Model):
         events = events.order_by(Event.open)
         return events.all()
 
+    def vote_on(self, user):
+        if not self.is_blocking(user):
+            self.blocked.append(user)
+            return True
+        return False
+
+    def unvote_on(self, user):
+        if self.is_blocking(user):
+            self.blocked.remove(user)
+            return True
+        return False
+
+    def is_blocking(self, user):
+        return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
+
+
     def json(self, me, event=None):
         """
         Generate JSON representation of this user.
@@ -312,6 +329,7 @@ class Event(db.Model):
         'User', secondary=invitations,
         backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
     )
+    votes = db.relationship('Vote', backref='event', lazy=True)
 
     def __init__(self, raw, school_id):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
@@ -359,20 +377,46 @@ class Event(db.Model):
     def people(self):
         return User.query.filter(User.current_event_id == self.id).count()
 
+    def get_vote(self, user):
+        return Vote.query.filter(Vote.event_id == self.id,
+                                 Vote.user_id == user.id).first()
+
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
                                                    'time', 'end_time', 'open',
                                                    'transitive_invites', 'capacity')}
+        vote = self.get_vote(me)
         raw.update({
             'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': self.people(),
+            'vote': vote.positive if vote else None,
+            'review': vote.review if vote else None,
             'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
         })
         return raw
+
+
+class Vote(db.Model):
+    __tablename__ = 'votes'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    positive = db.Column(db.Boolean)
+    review = db.Column(db.String(1024))
+
+    # Relationships
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
+
+    def __init__(self, user, event, positive, text):
+        self.user_id = user.id
+        self.event_id = event.id
+        self.positive = positive
+        self.text = text
 
 
 class School(db.Model):
