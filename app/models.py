@@ -309,7 +309,7 @@ class Event(db.Model):
     def __init__(self, raw, school_id):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
         self.time = self.time.astimezone(datetime.timezone.utc)
-        raw_end_time = raw.pop('end_time')
+        raw_end_time = raw.pop('end_time', None)
         if raw_end_time:
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
