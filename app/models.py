@@ -310,12 +310,9 @@ class Event(db.Model):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
         self.time = self.time.astimezone(datetime.timezone.utc)
         raw_end_time = raw.pop('end_time', None)
-        print(raw_end_time)
         if raw_end_time:
-            print('Found end time.')
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
-        print(self.end_time)
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.utcnow()
@@ -347,7 +344,10 @@ class Event(db.Model):
     def happening_now(self):
         # TODO: don't get time every repetition
         now = datetime.datetime.utcnow()
-        return (not self.ended) and (self.time < now < self.time + EVENT_LENGTH)
+        has_started = (self.time < now)
+        has_not_been_ended = (not self.ended)
+        is_not_over = (now < (self.end_time or (self.time + EVENT_LENGTH)))
+        return (has_started and is_not_over and has_not_been_ended)
 
     def people(self):
         return User.query.filter(User.current_event_id == self.id).count()
