@@ -341,6 +341,9 @@ class Event(db.Model):
         now = datetime.datetime.utcnow()
         return (not self.ended) and (self.time < now < self.time + EVENT_LENGTH)
 
+    def people(self):
+        return User.query.filter(User.current_event_id == self.id).count()
+
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
@@ -349,7 +352,7 @@ class Event(db.Model):
             'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
-            'people': User.query.filter(User.current_event_id == self.id).count(),
+            'people': self.people(),
             'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
         })
