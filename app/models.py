@@ -105,9 +105,10 @@ class User(db.Model):
         ), payload['exp']
 
     def search(self, query: str):
-        return User.query.filter(User.school_id == self.school_id,
-                                 User.id != self.id,
-                                 User.name.ilike('%' + query + '%')).all()
+        users = User.query.filter(User.school_id == self.school_id,
+                                  User.id != self.id,
+                                  User.name.ilike('%' + query + '%'))
+        return users.all()
 
     @staticmethod
     def decode_token(token):
@@ -347,7 +348,8 @@ class Event(db.Model):
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
-                                                   'time', 'open', 'transitive_invites', 'capacity')}
+                                                   'time', 'end_time', 'open',
+                                                   'transitive_invites', 'capacity')}
         raw.update({
             'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
