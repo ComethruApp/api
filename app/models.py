@@ -312,7 +312,7 @@ class Event(db.Model):
         raw_end_time = raw.pop('end_time', None)
         print(raw_end_time)
         if raw_end_time:
-            print('Found end time.'
+            print('Found end time.')
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
         print(self.end_time)
