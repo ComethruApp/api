@@ -309,6 +309,8 @@ class Event(db.Model):
     def __init__(self, raw, school_id):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
         self.time = self.time.astimezone(datetime.timezone.utc)
+        self.end_time = datetime.datetime.fromisoformat(raw.pop('end_time'))
+        self.end_time = self.end_time.astimezone(datetime.timezone.utc)
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.utcnow()
