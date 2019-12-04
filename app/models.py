@@ -310,9 +310,12 @@ class Event(db.Model):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
         self.time = self.time.astimezone(datetime.timezone.utc)
         raw_end_time = raw.pop('end_time', None)
+        print(raw_end_time)
         if raw_end_time:
+            print('Found end time.'
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
+        print(self.end_time)
         for field in raw:
             setattr(self, field, raw[field])
         self.registered_on = datetime.datetime.utcnow()
