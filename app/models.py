@@ -226,6 +226,7 @@ class User(db.Model):
             Event.time < now,
             Event.ended == False,
             now - EVENT_LENGTH < Event.time,
+            (Event.end_time == None) | (now < Event.end_time),
         )
         # Put private events first
         events = events.order_by(Event.open)
