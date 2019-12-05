@@ -154,6 +154,21 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
+@api_blueprint.route('/events/<event_id>/vote', methods=['POST'])
+def vote(event_id):
+    # TODO: check that I have access to this event
+    data = request.get_json()
+    event = Event.query.get(event_id)
+    if data['positive'] and data['negative']:
+        fail('You can\'t vote positively and negatively at the same time.')
+    g.me.vote_on(event, data['positive'], data['negative'], data['review'])
+
+@api_blueprint.route('/events/<event_id>/vote', methods=['DELETE'])
+def unvote(event_id):
+    # TODO: check that I have access to this event
+    event = Event.query.get(event_id)
+    g.me.unvote_on(event)
+
 @api_blueprint.route('/events/<event_id>/invites')
 def get_event_invitees(event_id):
     event = Event.query.get_or_404(event_id)

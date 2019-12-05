@@ -239,11 +239,20 @@ class User(db.Model):
         events = events.order_by(Event.open)
         return events.all()
 
-    def vote_on(self, user):
-        if not self.is_blocking(user):
-            self.blocked.append(user)
-            return True
-        return False
+    def vote_on(self, event, positive, negative, review):
+        vote = event.get_vote(self)
+        if vote is None:
+            vote = Vote(self, event)
+            self.votes.append(vote)
+        vote.positive = positive
+        vote.negative = negative
+        vote.review = review
+
+    def unvote_on(self, event):
+        vote = event.get_vote(self)
+        if vote is None:
+            return False
+        db.session.delete(vote)
 
     def unvote_on(self, user):
         if self.is_blocking(user):
@@ -406,17 +415,16 @@ class Vote(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     positive = db.Column(db.Boolean)
+    negative = db.Column(db.Boolean)
     review = db.Column(db.String(1024))
 
     # Relationships
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
 
-    def __init__(self, user, event, positive, text):
+    def __init__(self, user, event):
         self.user_id = user.id
         self.event_id = event.id
-        self.positive = positive
-        self.text = text
 
 
 class School(db.Model):
