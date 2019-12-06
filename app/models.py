@@ -388,7 +388,7 @@ class Event(db.Model):
         votes = Vote.query.filter(Vote.event_id == self.id)
         votes_count = votes.count()
         if votes_count == 0:
-            return 0
+            return 1
 
         likes_count = votes.filter(Vote.positive == True).count()
         neutral_count = votes.filter(Vote.positive == False,
