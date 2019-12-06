@@ -24,7 +24,7 @@ def confirm_email(token):
     else:
         user.confirmed = True
         db.session.commit()
-        return redirect(app.config['WEB_DOMAIN'] + '/confirmed'), 200
+        return redirect(app.config['WEB_DOMAIN'] + '/confirmed')
 
 
 def send_email(to, subject, template):
