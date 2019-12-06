@@ -5,49 +5,49 @@ from app.geography import attending
 from app.util import succ, fail
 import os
 
-api_blueprint = Blueprint('api', __name__)
+api = Blueprint('api', __name__)
 
 
-@api_blueprint.errorhandler(404)
+@api.errorhandler(404)
 def not_found_error(error):
     return fail('Not found.', 404)
 
-@api_blueprint.errorhandler(401)
+@api.errorhandler(401)
 def unauthorized(error):
     return fail('You\'re not authorized to perform this action.', 401)
 
-@api_blueprint.errorhandler(403)
+@api.errorhandler(403)
 def forbidden(error):
     return fail('You don\'t have permission to do this.', 403)
 
-@api_blueprint.before_request
+@api.before_request
 def verify_token():
     g.me = User.from_token(request.args.get('token'))
     if g.me is None:
         abort(401)
 
-@api_blueprint.route('/heartbeat')
+@api.route('/heartbeat')
 def heartbeat():
     return jsonify({
         'maintenance': bool(os.environ.get('MAINTENANCE', False)),
         'min_version': 0,
     })
 
-@api_blueprint.route('/users/<user_id>')
+@api.route('/users/<user_id>')
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
     return jsonify(user.json(g.me))
 
-@api_blueprint.route('/users/me')
+@api.route('/users/me')
 def get_me():
     return jsonify(g.me.json(g.me))
 
-@api_blueprint.route('/users/search/<query>')
+@api.route('/users/search/<query>')
 def search_users(query):
     users = g.me.search(query)
     return jsonify([user.json(g.me) for user in users])
 
-@api_blueprint.route('/users/<user_id>/block', methods=['POST'])
+@api.route('/users/<user_id>/block', methods=['POST'])
 def block_user(user_id):
     user = User.query.get(user_id)
     if g.me.block(user):
@@ -56,7 +56,7 @@ def block_user(user_id):
     else:
         return fail('You\'ve already blocked this person.')
 
-@api_blueprint.route('/users/<user_id>/unblock', methods=['POST'])
+@api.route('/users/<user_id>/unblock', methods=['POST'])
 def unblock_user(user_id):
     user = User.query.get(user_id)
     if g.me.unblock(user):
@@ -65,7 +65,7 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
-@api_blueprint.route('/users/me/events/current')
+@api.route('/users/me/events/current')
 def get_my_current_event():
     if g.me.current_event_id is None:
         return jsonify(None)
@@ -75,7 +75,7 @@ def get_my_current_event():
         return jsonify(None)
     return jsonify(event.json(g.me))
 
-@api_blueprint.route('/users/<user_id>/events/current')
+@api.route('/users/<user_id>/events/current')
 def get_user_current_event(user_id):
     # TODO: this is so repetitive stop
     user = User.query.get(user_id)
@@ -88,33 +88,33 @@ def get_user_current_event(user_id):
         return jsonify(None)
     return jsonify(event.json(g.me))
 
-@api_blueprint.route('/users/me/events')
+@api.route('/users/me/events')
 def get_my_events():
     events = g.me.events_hosted()
     return jsonify([event.json(g.me) for event in events])
 
-@api_blueprint.route('/users/<user_id>/events')
+@api.route('/users/<user_id>/events')
 def get_user_events(user_id):
     user = User.query.get_or_404(user_id)
     events = user.events_hosted()
     return jsonify([event.json(g.me) for event in events])
 
-@api_blueprint.route('/events/<event_id>/friends')
+@api.route('/events/<event_id>/friends')
 def get_friends_at_event(event_id):
     users = g.me.friends_at_event(event_id)
     return jsonify([user.json(g.me) for user in users])
 
-@api_blueprint.route('/events')
+@api.route('/events')
 def get_events():
     events = g.me.feed()
     return jsonify([event.json(g.me) for event in events])
 
-@api_blueprint.route('/events/<event_id>')
+@api.route('/events/<event_id>')
 def get_event(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify(event.json(g.me))
 
-@api_blueprint.route('/events', methods=['POST'])
+@api.route('/events', methods=['POST'])
 def create_event():
     data = request.get_json(g.me)
     event = Event(data, school_id=g.me.school_id)
@@ -123,7 +123,7 @@ def create_event():
     db.session.commit()
     return jsonify(event.json(g.me))
 
-@api_blueprint.route('/events/<event_id>', methods=['PUT'])
+@api.route('/events/<event_id>', methods=['PUT'])
 def update_event(event_id):
     data = request.get_json(g.me)
     event = Event.query.get_or_404(event_id)
@@ -135,7 +135,7 @@ def update_event(event_id):
     db.session.commit()
     return jsonify(event.json(g.me)), 202
 
-@api_blueprint.route('/events/<event_id>', methods=['DELETE'])
+@api.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
     if not event.is_hosted_by(g.me):
@@ -145,7 +145,7 @@ def delete_event(event_id):
     db.session.commit()
     return succ('Event deleted successfully.')
 
-@api_blueprint.route('/events/<event_id>/end', methods=['POST'])
+@api.route('/events/<event_id>/end', methods=['POST'])
 def end_event(event_id):
     event = Event.query.get_or_404(event_id)
     if not event.is_hosted_by(g.me):
@@ -154,7 +154,7 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
-@api_blueprint.route('/events/<event_id>/vote', methods=['POST'])
+@api.route('/events/<event_id>/vote', methods=['POST'])
 def vote(event_id):
     # TODO: check that I have access to this event
     data = request.get_json()
@@ -165,7 +165,7 @@ def vote(event_id):
     db.session.commit()
     return succ('Voted successfully.')
 
-@api_blueprint.route('/events/<event_id>/vote', methods=['DELETE'])
+@api.route('/events/<event_id>/vote', methods=['DELETE'])
 def unvote(event_id):
     # TODO: check that I have access to this event
     event = Event.query.get(event_id)
@@ -173,12 +173,12 @@ def unvote(event_id):
     db.session.commit()
     return succ('Successfully unvoted.')
 
-@api_blueprint.route('/events/<event_id>/invites')
+@api.route('/events/<event_id>/invites')
 def get_event_invitees(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify([user.json(g.me, event) for user in event.invitees])
 
-@api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
+@api.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def create_invitation(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
@@ -193,7 +193,7 @@ def create_invitation(event_id, user_id):
     else:
         abort(401)
 
-@api_blueprint.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
+@api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def rescind(event_id, user_id):
     event = Event.query.get(event_id)
     user = User.query.get(user_id)
@@ -205,7 +205,7 @@ def rescind(event_id, user_id):
     else:
         abort(401)
 
-@api_blueprint.route('/events/<event_id>/invites/search/<query>')
+@api.route('/events/<event_id>/invites/search/<query>')
 def search_users_for_event(event_id, query):
     """
     Search users and also return data about their invitation status to a given event.
@@ -215,7 +215,7 @@ def search_users_for_event(event_id, query):
     event = Event.query.get(event_id)
     return jsonify([user.json(g.me, event) for user in users])
 
-@api_blueprint.route('/location', methods=['POST'])
+@api.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
     # TODO: this is massively inefficient
@@ -226,7 +226,7 @@ def update_location():
     db.session.commit()
     return succ('Location received!')
 
-@api_blueprint.route('/friends/request/<user_id>', methods=['POST'])
+@api.route('/friends/request/<user_id>', methods=['POST'])
 def friend_request(user_id):
     user = User.query.get_or_404(user_id)
     if g.me.friend_request(user):
@@ -235,7 +235,7 @@ def friend_request(user_id):
     else:
         return fail('You\'re already friends with this person.')
 
-@api_blueprint.route('/friends/cancel/<user_id>', methods=['POST'])
+@api.route('/friends/cancel/<user_id>', methods=['POST'])
 def friend_cancel(user_id):
     friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == user_id).first()
     if friend_request_sent is None:
@@ -245,7 +245,7 @@ def friend_cancel(user_id):
     db.session.commit()
     return succ('Succesfully cancelled friend request.')
 
-@api_blueprint.route('/friends/accept/<friender_id>', methods=['POST'])
+@api.route('/friends/accept/<friender_id>', methods=['POST'])
 def friend_accept(friender_id):
     req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == friender_id).first()
     if req is None:
@@ -257,7 +257,7 @@ def friend_accept(friender_id):
     return succ('Accepted the request!')
 
 # TODO: should this maybe use the DELETE verb?
-@api_blueprint.route('/friends/reject/<user_id>', methods=['POST'])
+@api.route('/friends/reject/<user_id>', methods=['POST'])
 def friend_reject(user_id):
     """
     Decline a friend request.
@@ -269,7 +269,7 @@ def friend_reject(user_id):
     db.session.commit()
     return succ('Successfully rejected request.')
 
-@api_blueprint.route('/friends/remove/<user_id>', methods=['POST'])
+@api.route('/friends/remove/<user_id>', methods=['POST'])
 def friend_remove(user_id):
     """
     Remove friendship.
@@ -285,7 +285,7 @@ def friend_remove(user_id):
     db.session.commit()
     return succ('Succesfully removed friend.')
 
-@api_blueprint.route('/friends')
+@api.route('/friends')
 def get_friends():
     """
     Get friends of logged in user.
@@ -293,7 +293,7 @@ def get_friends():
     friends = g.me.friends()
     return jsonify([user.json(g.me) for user in friends]), 200
 
-@api_blueprint.route('/friends/requests')
+@api.route('/friends/requests')
 def get_friend_requests():
     """
     Get friend requests that have been sent to the current user.

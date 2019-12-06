@@ -8,9 +8,9 @@ from app import app, db, bcrypt, mail
 from app.models import User, School, BlacklistedToken
 from app.util import succ, fail
 
-auth_blueprint = Blueprint('auth', __name__)
+auth = Blueprint('auth', __name__)
 
-@auth_blueprint.route('/confirm/<token>')
+@auth.route('/confirm/<token>')
 def confirm_email(token):
     try:
         email = confirm_token(token)
@@ -54,7 +54,7 @@ def confirm_token(token, expiration=3600):
         return False
     return email
 
-@auth_blueprint.route('/register', methods=['POST'])
+@auth.route('/register', methods=['POST'])
 def register():
     # get the post data
     payload = request.get_json()
@@ -101,7 +101,7 @@ def register():
 
 
 
-@auth_blueprint.route('/login', methods=['POST'])
+@auth.route('/login', methods=['POST'])
 def login():
     # get the post data
     payload = request.get_json()
@@ -138,8 +138,10 @@ def login():
         return fail('There was an unexpected error. Please try again! :)', 500)
 
 
-@auth_blueprint.route('/logout', methods=['POST'])
+@auth.route('/logout', methods=['POST'])
 def logout():
+    pass
+    """
     # get auth token
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -162,3 +164,4 @@ def logout():
             return fail(resp), 401
     else:
         return fail('Provide a valid auth token.', 403)
+    """

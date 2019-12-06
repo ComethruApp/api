@@ -35,5 +35,5 @@ if not app.debug:
     app.logger.info('App startup')
 
 from app import routes, models, api, auth
-app.register_blueprint(api.api_blueprint, url_prefix='/api')
-app.register_blueprint(auth.auth_blueprint, url_prefix='/auth')
+app.register_blueprint(api.api, url_prefix='/api')
+app.register_blueprint(auth.auth, url_prefix='/auth')
