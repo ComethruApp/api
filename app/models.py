@@ -247,12 +247,6 @@ class User(db.Model):
             return False
         db.session.delete(vote)
 
-    def unvote_on(self, user):
-        if self.is_blocking(user):
-            self.blocked.remove(user)
-            return True
-        return False
-
     def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
 
