@@ -3,6 +3,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config(object):
+    WEB_DOMAIN = 'https://comethru.io'
+
     SECRET_KEY = os.environ.get('SECRET_KEY', 'Override this in production')
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', 'Override this too')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL',
@@ -10,6 +12,8 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     BCRYPT_LOG_ROUNDS = 13
+
+    CONFIRMATION_TOKEN_EXPIRATION = 36000
 
     MAIL_SERVER = 'smtp.googlemail.com'
     MAIL_PORT = 465

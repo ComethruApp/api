@@ -4,9 +4,10 @@ from flask.views import MethodView
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 
-from app import app, db, bcrypt, mail
+from app import app, db, mail, bcrypt
 from app.models import User, School, BlacklistedToken
 from app.util import succ, fail
+
 
 auth = Blueprint('auth', __name__)
 
@@ -41,17 +42,17 @@ def generate_confirmation_token(email):
     return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
 
 
-def confirm_token(token, expiration=3600):
+def confirm_token(token):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:
         email = serializer.loads(
             token,
             salt=app.config['SECURITY_PASSWORD_SALT'],
-            max_age=expiration
+            max_age=app.config['CONFIRMATION_TOKEN_EXPIRATION'],
         )
+        return email
     except:
         return False
-    return email
 
 @auth.route('/register', methods=['POST'])
 def register():
@@ -87,7 +88,7 @@ def register():
             confirmation_token = generate_confirmation_token(user.email)
             confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
             html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-            subject = '🌙 Confirm your email for Comethru'
+            subject = '🌙 Verify your email for Comethru!'
             send_email(user.email, subject, html)
 
             return succ('Check your email to confirm your address, then log in!', 201)
