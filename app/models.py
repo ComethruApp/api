@@ -78,7 +78,7 @@ class User(db.Model):
             primaryjoin=(blocks.c.blocker_id == id),
             secondaryjoin=(blocks.c.blocked_id == id),
             backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
-    votes = db.relationship('Vote', backref='event', lazy=True)
+    votes = db.relationship('Vote', backref='user', lazy=True)
 
     def __init__(self, name, email, password, school_id, confirmed=False):
         self.name = name
@@ -401,7 +401,7 @@ class Event(db.Model):
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': self.people(),
-            'vote': vote.positive if vote else None,
+            'vote': vote.json() if vote else None,
             'review': vote.review if vote else None,
             'rating': random.randint(0, 50) / 10,
             'hosts': [host.json(me) for host in self.hosts],
@@ -425,6 +425,13 @@ class Vote(db.Model):
     def __init__(self, user, event):
         self.user_id = user.id
         self.event_id = event.id
+
+    def json(self):
+        return {
+            'positive': self.positive,
+            'negative': self.negative,
+            'review': self.review,
+        }
 
 
 class School(db.Model):
