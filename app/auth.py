@@ -1,4 +1,4 @@
-from flask import Blueprint, request, make_response, jsonify, url_for, render_template
+from flask import Blueprint, request, make_response, jsonify, url_for, render_template, redirect
 from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
@@ -22,9 +22,8 @@ def confirm_email(token):
         return render_template('confirm.html', message='Email already confirmed! Please log in.'), 200
     else:
         user.confirmed = True
-        db.session.add(user)
         db.session.commit()
-        return render_template('confirm.html', message='Your account is confirmed! You can now log in through the Comethru mobile app.'), 200
+        return redirect(app.config['WEB_DOMAIN'] + '/confirmed'), 200
 
 
 def send_email(to, subject, template):
