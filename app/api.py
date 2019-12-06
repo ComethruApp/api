@@ -218,8 +218,6 @@ def search_users_for_event(event_id, query):
 @api_blueprint.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
-    g.me.lat = payload['lat']
-    g.me.lng = payload['lng']
     # TODO: this is massively inefficient
     g.me.current_event_id = None
     for event in g.me.feed():

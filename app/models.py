@@ -317,6 +317,7 @@ class Event(db.Model):
     description = db.Column(db.String(1024))
 
     location = db.Column(db.String(127), nullable=False)
+    # TODO remove these
     lat = db.Column(db.Float)
     lng = db.Column(db.Float)
 
