@@ -135,7 +135,7 @@ def login():
             return fail('Sorry, we couldn\'t recognize that email or password.', 404)
     except Exception as e:
         print(e)
-        return fail('Try again', 500)
+        return fail('There was an unexpected error. Please try again! :)', 500)
 
 
 @auth_blueprint.route('/logout', methods=['POST'])
