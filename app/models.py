@@ -386,13 +386,14 @@ class Event(db.Model):
 
     def rating(self):
         votes = Vote.query.filter(Vote.event_id == self.id)
+        votes_count = votes.count()
+        if votes_count == 0:
+            return 0
 
         likes_count = votes.filter(Vote.positive == True).count()
         neutral_count = votes.filter(Vote.positive == False,
                                Vote.negative == False).count()
         dislikes_count = votes.filter(Vote.negative == True).count()
-
-        votes_count = votes.count()
 
         return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / votes_count)
 
