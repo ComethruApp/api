@@ -390,6 +390,19 @@ class Event(db.Model):
         return Vote.query.filter(Vote.event_id == self.id,
                                  Vote.user_id == user.id).first()
 
+    def rating(self):
+        votes = Vote.query.filter(Vote.event_id == self.id)
+
+        likes_count = votes.filter(Vote.positive == True).count()
+        neutral_count = votes.filter(Vote.positive == False,
+                               Vote.negative == False).count()
+        dislikes_count = votes.filter(Vote.negative == True).count()
+
+        votes_count = votes.count()
+
+        return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / votes_count)
+
+
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'lat', 'lng',
@@ -403,7 +416,7 @@ class Event(db.Model):
             'people': self.people(),
             'vote': vote.json() if vote else None,
             'review': vote.review if vote else None,
-            'rating': random.randint(0, 50) / 10,
+            'rating': self.rating(),
             'hosts': [host.json(me) for host in self.hosts],
         })
         return raw

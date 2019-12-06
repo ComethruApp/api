@@ -158,7 +158,6 @@ def end_event(event_id):
 def vote(event_id):
     # TODO: check that I have access to this event
     data = request.get_json()
-    print(data)
     event = Event.query.get(event_id)
     if data['positive'] and data['negative']:
         fail('You can\'t vote positively and negatively at the same time.')
