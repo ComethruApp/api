@@ -90,21 +90,40 @@ class User(db.Model):
         self.confirmed = confirmed
         self.registered_on = datetime.datetime.now()
 
-    def encode_token(self, user_id):
+    def generate_token(self):
         """
-        Generates the Auth Token
-        :return: string
+        Generate auth token.
+        :return: token and expiration timestamp.
         """
+        now = datetime.datetime.utcnow()
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=365, seconds=0),
-            'iat': datetime.datetime.utcnow(),
-            'sub': user_id
+            'iat': now,
+            'exp': now + datetime.timedelta(days=3650),
+            'sub': self.id,
         }
         return jwt.encode(
             payload,
             app.config.get('SECRET_KEY'),
             algorithm='HS256'
-        ), payload['exp']
+        ).decode(), payload['exp']
+
+    @staticmethod
+    def from_token(token):
+        """
+        Decode/validate an auth token.
+        :param token: token to decode.
+        :return: User whose token this is, or None if token invalid/no user associated
+        """
+        try:
+            payload = jwt.decode(token, app.config.get('SECRET_KEY'))
+            is_blacklisted = BlacklistedToken.check_blacklist(token)
+            if is_blacklisted:
+                # Token was blacklisted following logout
+                return None
+            return User.query.get(payload['sub'])
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            # Signature expired, or token otherwise invalid
+            return None
 
     def events_hosted(self):
         # TODO: the only reason "events_" is in the name of this function is because "hosted" conflicts with the
@@ -116,32 +135,6 @@ class User(db.Model):
                                   User.id != self.id,
                                   User.name.ilike('%' + query + '%'))
         return users.all()
-
-    @staticmethod
-    def decode_token(token):
-        """
-        Validates the auth token
-        :param token:
-        :return: integer|string
-        """
-        try:
-            payload = jwt.decode(token, app.config.get('SECRET_KEY'))
-            is_blacklisted = BlacklistedToken.check_blacklist(token)
-            if is_blacklisted:
-                return 'Token blacklisted. Please log in again.'
-            else:
-                return payload['sub']
-        except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please log in again.'
-        except jwt.InvalidTokenError:
-            return 'Invalid token. Please log in again.'
-
-    @staticmethod
-    def from_token(token):
-        user_id = User.decode_token(token)
-        user = User.query.get(user_id)
-        return user
-
 
     def follow(self, user):
         if not self.is_following(user):

@@ -113,21 +113,19 @@ def login():
         if user and bcrypt.check_password_hash(user.password, payload.get('password')):
             if not user.confirmed:
                 return fail('Please check your email to confirm your account before logging in!', 401)
-            # TODO stop abusing this function, it should just return one thing
-            token, exp = user.encode_token(user.id)
+            token, expires_in = user.generate_token()
             if token:
                 response_data = {
                     'status': 'success',
                     'message': 'Successfully logged in.',
-                    'token': token.decode(),
-                    # TODO: clean this up?
+                    'token': token,
                     'user': {
                         'id': user.id,
                         'name': user.name,
                         # do we need this?
                         'email': user.email,
-                        'token': token.decode(),
-                        'expires_in': exp,
+                        'token': token,
+                        'expires_in': expires_in,
                     }
                 }
                 return jsonify(response_data), 200
