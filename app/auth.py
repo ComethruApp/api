@@ -111,6 +111,8 @@ def login():
             email=payload.get('email')
         ).first()
         if user and bcrypt.check_password_hash(user.password, payload.get('password')):
+            if not user.confirmed:
+                return fail('Please check your email to confirm your account before logging in!', 401)
             # TODO stop abusing this function, it should just return one thing
             token, exp = user.encode_token(user.id)
             if token:
