@@ -51,6 +51,10 @@ class User(db.Model):
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Facebook integration
+    facebook_connected = db.Column(db.Boolean, default=False)
+    facebook_id = db.Column(db.String, nullable=True)
+
     # Columns related to current position
     lat = db.Column(db.Float, nullable=True)
     lng = db.Column(db.Float, nullable=True)
@@ -250,6 +254,13 @@ class User(db.Model):
     def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
 
+    def facebook_login(self, facebook_id):
+        self.facebook_connected = True
+        self.facebook_id = facebook_id
+
+    def facebook_logout(self):
+        self.facebook_connected = False
+        self.facebook_id = None
 
     def json(self, me, event=None):
         """
