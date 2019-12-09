@@ -355,7 +355,10 @@ class Event(db.Model):
         self.school_id = school_id
 
     def add_host(self, user):
+        if self.is_hosted_by(user):
+            return False
         self.hosts.append(user)
+        return True
 
     def is_hosted_by(self, user) -> bool:
         return self.hosts.filter(hostships.c.user_id == user.id).count() > 0
