@@ -52,7 +52,7 @@ class User(db.Model):
     admin = db.Column(db.Boolean, nullable=False, default=False)
 
     # Facebook integration
-    facebook_connected = db.Column(db.Boolean, default=False)
+    # facebook_id is None if no account has been connected
     facebook_id = db.Column(db.String, nullable=True)
 
     # Columns related to current position
@@ -254,12 +254,10 @@ class User(db.Model):
     def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
 
-    def facebook_login(self, facebook_id):
-        self.facebook_connected = True
+    def facebook_connect(self, facebook_id):
         self.facebook_id = facebook_id
 
-    def facebook_logout(self):
-        self.facebook_connected = False
+    def facebook_disconnect(self):
         self.facebook_id = None
 
     def json(self, me, event=None):
@@ -283,6 +281,7 @@ class User(db.Model):
             # Is the current user friends with this user?
             'is_friend': self.is_friends_with(me),
             'invited': event.is_invited(self) if event else None,
+            'facebook_id': self.facebook_id,
         }
 
 

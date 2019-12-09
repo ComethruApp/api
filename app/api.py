@@ -65,6 +65,15 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
+@api.route('/users/me/facebook', methods=['POST'])
+def facebook_connect():
+    data = request.get_json()
+    g.me.facebook_connect(data['id'])
+
+@api.route('/users/me/facebook', methods=['DELETE'])
+def facebook_disconnect():
+    g.me.facebook_disconnect()
+
 @api.route('/users/me/events/current')
 def get_my_current_event():
     if g.me.current_event_id is None:
