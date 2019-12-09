@@ -270,15 +270,13 @@ class User(db.Model):
         :param me: User currently logged in. Necessary to generate boolean fields describing relationships.
         :param event: optionally specify an event to check invitation status for.
         """
-        return {
-            'id': self.id,
-            'name': self.name,
-            'email': self.email,
-            'verified': self.verified,
-            'avatar': self.avatar,
+        raw = {key: getattr(self, key) for key in ('id', 'name', 'email', 'verified',
+                                                   'avatar',
+                                                   'facebook_id', 'facebook_name')}
+        raw.update({
             # Is this user me?
             'is_me': (self == me),
-            # Did this user request/send a friend request from/to this user?
+            # Did this user receive/send a friend request from/to this user?
             'has_sent_friend_request': self.has_sent_friend_request(me),
             'has_received_friend_request': self.has_received_friend_request(me),
             # Is the current user friends with this user?
@@ -286,7 +284,8 @@ class User(db.Model):
             'invited': event.is_invited(self) if event else None,
             'facebook_id': self.facebook_id,
             'facebook_name': self.facebook_name,
-        }
+        })
+        return raw
 
 
 class BlacklistedToken(db.Model):
