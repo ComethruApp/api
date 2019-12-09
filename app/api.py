@@ -69,11 +69,13 @@ def unblock_user(user_id):
 def facebook_connect():
     data = request.get_json()
     g.me.facebook_connect(data['id'])
+    db.session.commit()
     return succ('Successfully connected!')
 
 @api.route('/users/me/facebook', methods=['DELETE'])
 def facebook_disconnect():
     g.me.facebook_disconnect()
+    db.session.commit()
     return succ('Successfully disconnected!')
 
 @api.route('/users/me/events/current')
