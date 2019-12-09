@@ -68,7 +68,7 @@ def unblock_user(user_id):
 @api.route('/users/me/facebook', methods=['POST'])
 def facebook_connect():
     data = request.get_json()
-    g.me.facebook_connect(data['id'])
+    g.me.facebook_connect(data['id'], data['name'])
     db.session.commit()
     return succ('Successfully connected!')
 
