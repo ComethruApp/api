@@ -282,6 +282,7 @@ class User(db.Model):
             # Is the current user friends with this user?
             'is_friend': self.is_friends_with(me),
             'invited': event.is_invited(self) if event else None,
+            'hosting': event.is_hosted_by(self) if event else None,
             'facebook_id': self.facebook_id,
             'facebook_name': self.facebook_name,
         })

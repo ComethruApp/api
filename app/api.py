@@ -208,13 +208,43 @@ def create_invitation(event_id, user_id):
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def rescind(event_id, user_id):
-    event = Event.query.get(event_id)
-    user = User.query.get(user_id)
+    event = Event.query.get_or_404(event_id)
+    user = User.query.get_or_404(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
     if event.is_hosted_by(g.me):
         event.invitees.remove(user)
         db.session.commit()
         return succ('Rescinded user.', 200)
+    else:
+        abort(401)
+
+@api.route('/events/<event_id>/hosts')
+def get_event_hosts(event_id):
+    event = Event.query.get_or_404(event_id)
+    return jsonify([user.json(g.me, event) for user in event.hosts])
+
+@api.route('/events/<event_id>/hosts/<user_id>', methods=['POST'])
+def add_host(event_id, user_id):
+    event = Event.query.get_or_404(event_id)
+    user = User.query.get_or_404(user_id)
+    if event.is_hosted_by(g.me):
+        if event.add_host(user):
+            db.session.commit()
+            return succ('Added host.')
+        else:
+            return fail('User is already a host.')
+    else:
+        abort(401)
+
+@api.route('/events/<event_id>/hosts/<user_id>', methods=['DELETE'])
+def remove_host(event_id, user_id):
+    event = Event.query.get_or_404(event_id)
+    user = User.query.get_or_404(user_id)
+    if event.is_hosted_by(g.me):
+        # TODO: Add remove_host function on event
+        event.hosts.remove(user)
+        db.session.commit()
+        return succ('Remove host.', 200)
     else:
         abort(401)
 
