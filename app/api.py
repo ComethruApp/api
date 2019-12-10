@@ -33,6 +33,15 @@ def heartbeat():
         'min_version': 0,
     })
 
+@api.route('/status')
+def about():
+    return jsonify({
+        'users': User.query.count(),
+        'events': Events.query.count(),
+        # Don't include test school
+        'schools': School.query.count() - 1,
+    })
+
 @api.route('/users/<user_id>')
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
