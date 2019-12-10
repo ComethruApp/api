@@ -338,7 +338,7 @@ class Event(db.Model):
     )
     invitees = db.relationship(
         'User', secondary=invitations,
-        backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
+        backref=db.backref('invited_to', lazy='subquery'), lazy='subquery'
     )
     votes = db.relationship('Vote', backref='event', lazy=True)
 
