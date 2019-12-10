@@ -196,12 +196,12 @@ def unvote(event_id):
     return succ('Successfully unvoted.')
 
 @api.route('/events/<event_id>/invites')
-def get_event_invitees(event_id):
+def get_event_invites(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify([user.json(g.me, event) for user in event.invitees])
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
-def create_invitation(event_id, user_id):
+def send_invite(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
     # TODO: store who created an invitation, and allow users who aren't hosts to only remove their invitations
@@ -216,7 +216,7 @@ def create_invitation(event_id, user_id):
         abort(401)
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
-def rescind(event_id, user_id):
+def cancel_invite(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
