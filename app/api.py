@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
-from app.models import User, Event, friendships, friend_requests
+from app.models import User, Event, School, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
 import os
