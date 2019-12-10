@@ -37,7 +37,7 @@ def heartbeat():
 def about():
     return jsonify({
         'users': User.query.count(),
-        'events': Events.query.count(),
+        'events': Event.query.count(),
         # Don't include test school
         'schools': School.query.count() - 1,
     })
