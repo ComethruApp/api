@@ -334,7 +334,7 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
         'User', secondary=hostships,
-        backref=db.backref('hosted', lazy='dynamic', cascade="all, delete"), lazy='dynamic'
+        backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic'
     )
     invitees = db.relationship(
         'User', secondary=invitations,
