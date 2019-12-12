@@ -140,7 +140,7 @@ def get_event(event_id):
 def create_event():
     data = request.get_json(g.me)
     event = Event(data, school_id=g.me.school_id)
-    event.add_host(g.me)
+    event.hosts = [g.me]
     db.session.add(event)
     db.session.commit()
     return jsonify(event.json(g.me))
