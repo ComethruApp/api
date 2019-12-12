@@ -190,10 +190,15 @@ def vote(event_id):
 @api.route('/events/<event_id>/vote', methods=['DELETE'])
 def unvote(event_id):
     # TODO: check that I have access to this event
-    event = Event.query.get(event_id)
+    event = Event.query.get_or_404(event_id)
     g.me.unvote_on(event)
     db.session.commit()
     return succ('Successfully unvoted.')
+
+@api.route('/events/<event_id>/votes', methods=['POST'])
+def get_votes(event_id):
+    event = Event.query.get_or_404(event_id)
+    return jsonify([vote.json() for vote in event.votes])
 
 @api.route('/events/<event_id>/invites')
 def get_event_invites(event_id):
