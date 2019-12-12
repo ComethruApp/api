@@ -195,7 +195,7 @@ def unvote(event_id):
     db.session.commit()
     return succ('Successfully unvoted.')
 
-@api.route('/events/<event_id>/votes', methods=['POST'])
+@api.route('/events/<event_id>/votes', methods=['GET'])
 def get_votes(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify([vote.json() for vote in event.votes])
