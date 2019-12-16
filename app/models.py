@@ -86,7 +86,7 @@ class User(db.Model):
             backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
     votes = db.relationship('Vote', backref='user', lazy=True)
 
-    def __init__(self, name, email, password, school_id, confirmed=False):
+    def __init__(self, name, email, password, school_id, confirmed=False, year=None):
         self.name = name
         self.email = email
         self.password = bcrypt.generate_password_hash(
@@ -94,6 +94,7 @@ class User(db.Model):
         ).decode()
         self.school_id = school_id
         self.confirmed = confirmed
+        self.year = year
         self.registered_on = datetime.datetime.now()
 
     def generate_token(self):
@@ -156,7 +157,6 @@ class User(db.Model):
 
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
-
 
     def block(self, user):
         if not self.is_blocking(user):
@@ -272,7 +272,6 @@ class User(db.Model):
         :param event: optionally specify an event to check invitation status for.
         """
         raw = {key: getattr(self, key) for key in ('id', 'name', 'email', 'verified',
-                                                   'avatar',
                                                    'facebook_id', 'facebook_name')}
         raw.update({
             # Is this user me?

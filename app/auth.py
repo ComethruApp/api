@@ -66,6 +66,7 @@ def register():
             user = User(
                 name=payload['name'],
                 email=email,
+                year=payload['year'],
                 password=payload['password'],
                 confirmed=False,
                 school_id=school.id,
