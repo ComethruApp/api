@@ -321,6 +321,7 @@ class Event(db.Model):
     # TODO remove these
     lat = db.Column(db.Float)
     lng = db.Column(db.Float)
+    address = db.Column(db.String(255), nullable=True)
 
     open = db.Column(db.Boolean, default=True)
     transitive_invites = db.Column(db.Boolean, default=False)
