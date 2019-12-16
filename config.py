@@ -26,3 +26,5 @@ class Config(object):
 
     # mail accounts
     MAIL_DEFAULT_SENDER = 'hello@comethru.io'
+
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')

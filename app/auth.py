@@ -2,11 +2,11 @@ from flask import Blueprint, request, make_response, jsonify, url_for, render_te
 from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Message
 
 from app import app, db, mail, bcrypt
 from app.models import User, School, BlacklistedToken
 from app.util import succ, fail
+from app.mailgun import send_email
 
 
 auth = Blueprint('auth', __name__)
@@ -25,16 +25,6 @@ def confirm_email(token):
         user.confirmed = True
         db.session.commit()
         return redirect(app.config['WEB_DOMAIN'] + '/confirmed')
-
-
-def send_email(to, subject, template):
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=app.config['MAIL_DEFAULT_SENDER']
-    )
-    mail.send(msg)
 
 
 def generate_confirmation_token(email):
@@ -87,9 +77,9 @@ def register():
             # Build and send confirmation email
             confirmation_token = generate_confirmation_token(user.email)
             confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
-            html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
+            body = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
             subject = '🌙 Verify your email for Comethru!'
-            send_email(user.email, subject, html)
+            send_email(user.email, subject, body)
 
             return succ('Check your email to confirm your address, then log in!', 201)
         except Exception as e:
