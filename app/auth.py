@@ -78,9 +78,9 @@ def register():
             # Build and send confirmation email
             confirmation_token = generate_confirmation_token(user.email)
             confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
-            body = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
+            html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
             subject = '🌙 Verify your email for Comethru!'
-            send_email(user.email, subject, body)
+            send_email(user.email, subject, html)
 
             return succ('Check your email to confirm your address, then log in!', 201)
         except Exception as e:
