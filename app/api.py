@@ -254,7 +254,7 @@ def add_host(event_id, user_id):
 def remove_host(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
-    if event.is_hosted_by(g.me):
+    if event.is_hosted_by(g.me) and user != g.me:
         # TODO: Add remove_host function on event
         event.hosts.remove(user)
         db.session.commit()
