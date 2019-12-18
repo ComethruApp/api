@@ -260,12 +260,12 @@ def get_user_current_event(user_id):
     user = User.query.get(user_id)
     if not g.me.is_friends_with(user):
         return fail('You must be friends with this user to view their location.', 403)
-    if user.current_event_id is None:
-        return jsonify(None)
+    if g.me.current_event_id is None:
+        return jsonify([])
     event = Event.query.get(user.current_event_id)
     if event is None:
-        return jsonify(None)
-    return jsonify(event.json(g.me))
+        return jsonify([])
+    return jsonify([event.json(g.me)])
 
 @api.route('/users/me/events')
 def get_my_events():
