@@ -76,10 +76,11 @@ def update_password():
     data = request.get_json()
     old_password = data.get('old_password')
     new_password = data.get('new_password')
-    if old_password is None or new_password is None:
+    if not old_password or not new_password:
         return fail('Improper parameters.')
     if g.me.is_password_correct(old_password):
         g.me.set_password(new_password)
+        db.session.commit()
         return succ('Successfully updated password!')
     return fail('Incorrect password.', 403)
 
