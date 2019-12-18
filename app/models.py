@@ -132,6 +132,9 @@ class User(db.Model):
             # Signature expired, or token otherwise invalid
             return None
 
+    def is_password_correct(self, password: str) -> bool:
+        return bcrypt.check_password_hash(self.password, password)
+
     def events_hosted(self):
         # TODO: the only reason "events_" is in the name of this function is because "hosted" conflicts with the
         # backref name that it uses... find a way to be cleaner about that.

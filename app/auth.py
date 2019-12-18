@@ -101,7 +101,7 @@ def login():
         user = User.query.filter_by(
             email=payload.get('email')
         ).first()
-        if user and bcrypt.check_password_hash(user.password, payload.get('password')):
+        if user and user.is_password_correct(payload.get('password')):
             if not user.confirmed:
                 return fail('Please check your email to confirm your account before logging in!', 401)
             token, expires_in = user.generate_token()
