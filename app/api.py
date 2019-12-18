@@ -41,8 +41,6 @@ def heartbeat():
 @api.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
-    print(payload)
-    # TODO: this is massively inefficient
     g.me.current_event_id = None
     for event in g.me.feed():
         if attending(payload['lat'], payload['lng'], event.lat, event.lng):
@@ -284,29 +282,29 @@ def get_friends_at_event(event_id):
     return jsonify([user.json(g.me) for user in users])
 
 # Reviews
-@api.route('/events/<event_id>/votes', methods=['GET'])
-def get_votes(event_id):
+@api.route('/events/<event_id>/reviews', methods=['GET'])
+def get_reviews(event_id):
     event = Event.query.get_or_404(event_id)
-    return jsonify([vote.json() for vote in event.votes])
+    return jsonify([review.json() for review in event.reviews])
 
-@api.route('/events/<event_id>/vote', methods=['POST'])
-def vote(event_id):
+@api.route('/events/<event_id>/reviews', methods=['POST'])
+def create_review(event_id):
     # TODO: check that I have access to this event
     data = request.get_json()
     event = Event.query.get(event_id)
     if data['positive'] and data['negative']:
-        fail('You can\'t vote positively and negatively at the same time.')
-    g.me.vote_on(event, data['positive'], data['negative'], data['review'])
+        fail('You can\'t review positively and negatively at the same time.')
+    g.me.review_on(event, data['positive'], data['negative'], data['body'])
     db.session.commit()
-    return succ('Voted successfully.')
+    return succ('Reviewed successfully.')
 
-@api.route('/events/<event_id>/vote', methods=['DELETE'])
-def unvote(event_id):
+@api.route('/events/<event_id>/reviews', methods=['DELETE'])
+def delete_review(event_id):
     # TODO: check that I have access to this event
     event = Event.query.get_or_404(event_id)
-    g.me.unvote_on(event)
+    g.me.unreview_on(event)
     db.session.commit()
-    return succ('Successfully unvoted.')
+    return succ('Successfully unreviewd.')
 
 # Invites
 @api.route('/events/<event_id>/invites')

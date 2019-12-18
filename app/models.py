@@ -84,7 +84,7 @@ class User(db.Model):
             primaryjoin=(blocks.c.blocker_id == id),
             secondaryjoin=(blocks.c.blocked_id == id),
             backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
-    votes = db.relationship('Vote', backref='user', lazy=True)
+    reviews = db.relationship('Review', backref='user', lazy=True)
 
     def __init__(self, name, email, password, school_id, confirmed=False, year=None):
         self.name = name
@@ -244,20 +244,20 @@ class User(db.Model):
         events = events.order_by(Event.open)
         return events.all()
 
-    def vote_on(self, event, positive, negative, review):
-        vote = event.get_vote(self)
-        if vote is None:
-            vote = Vote(self, event)
-            self.votes.append(vote)
-        vote.positive = positive
-        vote.negative = negative
-        vote.review = review
+    def review_on(self, event, positive, negative, review):
+        review = event.get_review(self)
+        if review is None:
+            review = Review(self, event)
+            self.reviews.append(review)
+        review.positive = positive
+        review.negative = negative
+        review.review = review
 
-    def unvote_on(self, event):
-        vote = event.get_vote(self)
-        if vote is None:
+    def unreview_on(self, event):
+        review = event.get_review(self)
+        if review is None:
             return False
-        db.session.delete(vote)
+        db.session.delete(review)
 
     def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
@@ -347,7 +347,7 @@ class Event(db.Model):
         'User', secondary=invitations,
         backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
     )
-    votes = db.relationship('Vote', backref='event', lazy=True)
+    reviews = db.relationship('Review', backref='event', lazy=True)
 
     def __init__(self, raw, school_id):
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
@@ -398,22 +398,22 @@ class Event(db.Model):
     def people(self):
         return User.query.filter(User.current_event_id == self.id).count()
 
-    def get_vote(self, user):
-        return Vote.query.filter(Vote.event_id == self.id,
-                                 Vote.user_id == user.id).first()
+    def get_review(self, user):
+        return Review.query.filter(Review.event_id == self.id,
+                                 Review.user_id == user.id).first()
 
     def rating(self):
-        votes = Vote.query.filter(Vote.event_id == self.id)
-        votes_count = votes.count()
-        if votes_count == 0:
+        reviews = Review.query.filter(Review.event_id == self.id)
+        reviews_count = reviews.count()
+        if reviews_count == 0:
             return 1
 
-        likes_count = votes.filter(Vote.positive == True).count()
-        neutral_count = votes.filter(Vote.positive == False,
-                               Vote.negative == False).count()
-        dislikes_count = votes.filter(Vote.negative == True).count()
+        likes_count = reviews.filter(Review.positive == True).count()
+        neutral_count = reviews.filter(Review.positive == False,
+                               Review.negative == False).count()
+        dislikes_count = reviews.filter(Review.negative == True).count()
 
-        return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / votes_count)
+        return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / reviews_count)
 
 
     def json(self, me):
@@ -421,28 +421,28 @@ class Event(db.Model):
                                                    'location', 'lat', 'lng',
                                                    'time', 'end_time', 'open',
                                                    'transitive_invites', 'capacity')}
-        vote = self.get_vote(me)
+        review = self.get_review(me)
         raw.update({
             'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': self.people(),
-            'vote': vote.json() if vote else None,
-            'review': vote.review if vote else None,
+            'review': review.json() if review else None,
+            'review': review.review if review else None,
             'rating': self.rating(),
             'hosts': [host.json(me) for host in self.hosts],
         })
         return raw
 
 
-class Vote(db.Model):
-    __tablename__ = 'votes'
+class Review(db.Model):
+    __tablename__ = 'reviews'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     positive = db.Column(db.Boolean)
     negative = db.Column(db.Boolean)
-    review = db.Column(db.String(1024))
+    body = db.Column(db.String(1024))
 
     # Relationships
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -456,7 +456,7 @@ class Vote(db.Model):
         return {
             'positive': self.positive,
             'negative': self.negative,
-            'review': self.review,
+            'body': self.body,
         }
 
 
