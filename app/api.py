@@ -41,6 +41,7 @@ def heartbeat():
 @api.route('/location', methods=['POST'])
 def update_location():
     payload = request.get_json(g.me)
+    print(payload)
     # TODO: this is massively inefficient
     g.me.current_event_id = None
     for event in g.me.feed():
@@ -247,12 +248,11 @@ def end_event(event_id):
 @api.route('/users/me/events/current')
 def get_my_current_event():
     if g.me.current_event_id is None:
-        return jsonify(None)
+        return jsonify([])
     event = Event.query.get(g.me.current_event_id)
     if event is None:
-        # TODO: this feels very weird! Look into it!
-        return jsonify(None)
-    return jsonify(event.json(g.me))
+        return jsonify([])
+    return jsonify([event.json(g.me)])
 
 @api.route('/users/<user_id>/events/current')
 def get_user_current_event(user_id):
