@@ -26,6 +26,10 @@ def verify_token():
     if g.me is None:
         abort(401)
 
+
+###########################
+# Lifecycle/miscellaneous #
+###########################
 @api.route('/heartbeat')
 def heartbeat():
     return jsonify({
@@ -41,6 +45,22 @@ def about():
         # Don't include test school
         'schools': School.query.count() - 1,
     })
+
+@api.route('/location', methods=['POST'])
+def update_location():
+    payload = request.get_json(g.me)
+    # TODO: this is massively inefficient
+    g.me.current_event_id = None
+    for event in g.me.feed():
+        if attending(payload['lat'], payload['lng'], event.lat, event.lng):
+            g.me.current_event_id = event.id
+    db.session.commit()
+    return succ('Location received!')
+
+
+#########
+# Users #
+#########
 
 @api.route('/users/<user_id>')
 def get_user(user_id):
@@ -74,6 +94,7 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
+# Facebook
 @api.route('/users/me/facebook', methods=['POST'])
 def facebook_connect():
     data = request.get_json()
@@ -87,44 +108,78 @@ def facebook_disconnect():
     db.session.commit()
     return succ('Successfully disconnected!')
 
-@api.route('/users/me/events/current')
-def get_my_current_event():
-    if g.me.current_event_id is None:
-        return jsonify(None)
-    event = Event.query.get(g.me.current_event_id)
-    if event is None:
-        # TODO: this feels very weird! Look into it!
-        return jsonify(None)
-    return jsonify(event.json(g.me))
-
-@api.route('/users/<user_id>/events/current')
-def get_user_current_event(user_id):
-    # TODO: this is so repetitive stop
-    user = User.query.get(user_id)
-    if not g.me.is_friends_with(user):
-        return fail('You must be friends with this user to view their location.', 401)
-    if user.current_event_id is None:
-        return jsonify(None)
-    event = Event.query.get(user.current_event_id)
-    if event is None:
-        return jsonify(None)
-    return jsonify(event.json(g.me))
-
-@api.route('/users/me/events')
-def get_my_events():
-    events = g.me.events_hosted()
-    return jsonify([event.json(g.me) for event in events])
-
-@api.route('/users/<user_id>/events')
-def get_user_events(user_id):
+# Friendships
+@api.route('/friends/<user_id>/request', methods=['POST'])
+def create_friend_request(user_id):
     user = User.query.get_or_404(user_id)
-    events = user.events_hosted()
-    return jsonify([event.json(g.me) for event in events])
+    if g.me.friend_request(user):
+        db.session.commit()
+        return succ('Succesfully sent friend request!')
+    else:
+        return fail('You\'re already friends with this person.')
 
-@api.route('/events/<event_id>/friends')
-def get_friends_at_event(event_id):
-    users = g.me.friends_at_event(event_id)
-    return jsonify([user.json(g.me) for user in users])
+@api.route('/friends/<user_id>/cancel', methods=['POST'])
+def cancel_friend_request(user_id):
+    friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == user_id).first_or_404()
+    if friend_request_sent is not None:
+        g.me.friend_requests_sent.remove(friend_request_sent)
+    db.session.commit()
+    return succ('Succesfully cancelled friend request.')
+
+@api.route('/friends/<friender_id>/accept', methods=['POST'])
+def accept_friend_request(friender_id):
+    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == friender_id).first_or_404()
+    friend = User.query.get(friender_id)
+    friend.friended.append(g.me)
+    g.me.friend_requests_received.remove(req)
+    db.session.commit()
+    return succ('Accepted the request!')
+
+@api.route('/friends/<user_id>/reject', methods=['POST'])
+def reject_friend_request(user_id):
+    """
+    Decline a friend request.
+    """
+    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == user_id).first_or_404()
+    g.me.friend_requests_received.remove(req)
+    db.session.commit()
+    return succ('Successfully rejected request.')
+
+@api.route('/friends/<user_id>/remove', methods=['POST'])
+def friend_remove(user_id):
+    """
+    Remove friendship.
+    """
+    friendship_sent = g.me.friended.filter(friendships.c.friended_id == user_id).first()
+    friendship_received = g.me.frienders.filter(friendships.c.friender_id == user_id).first()
+    if friendship_sent is None and friendship_received is None:
+        return fail('Couldn\'t find a friendship with this person.')
+    if friendship_sent is not None:
+        g.me.friended.remove(friendship_sent)
+    if friendship_received is not None:
+        g.me.frienders.remove(friendship_received)
+    db.session.commit()
+    return succ('Succesfully removed friend.')
+
+@api.route('/friends')
+def get_friends():
+    """
+    Get friends of logged in user.
+    """
+    friends = g.me.friends()
+    return jsonify([user.json(g.me) for user in friends])
+
+@api.route('/friends/requests')
+def get_friend_requests():
+    """
+    Get friend requests that have been sent to the current user.
+    """
+    friend_requests = g.me.friend_requests()
+    return jsonify([user.json(g.me) for user in friend_requests])
+
+##########
+# Events #
+##########
 
 @api.route('/events')
 def get_events():
@@ -176,6 +231,51 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
+@api.route('/users/me/events/current')
+def get_my_current_event():
+    if g.me.current_event_id is None:
+        return jsonify(None)
+    event = Event.query.get(g.me.current_event_id)
+    if event is None:
+        # TODO: this feels very weird! Look into it!
+        return jsonify(None)
+    return jsonify(event.json(g.me))
+
+@api.route('/users/<user_id>/events/current')
+def get_user_current_event(user_id):
+    # TODO: this is so repetitive stop
+    user = User.query.get(user_id)
+    if not g.me.is_friends_with(user):
+        return fail('You must be friends with this user to view their location.', 401)
+    if user.current_event_id is None:
+        return jsonify(None)
+    event = Event.query.get(user.current_event_id)
+    if event is None:
+        return jsonify(None)
+    return jsonify(event.json(g.me))
+
+@api.route('/users/me/events')
+def get_my_events():
+    events = g.me.events_hosted()
+    return jsonify([event.json(g.me) for event in events])
+
+@api.route('/users/<user_id>/events')
+def get_user_events(user_id):
+    user = User.query.get_or_404(user_id)
+    events = user.events_hosted()
+    return jsonify([event.json(g.me) for event in events])
+
+@api.route('/events/<event_id>/friends')
+def get_friends_at_event(event_id):
+    users = g.me.friends_at_event(event_id)
+    return jsonify([user.json(g.me) for user in users])
+
+# Reviews
+@api.route('/events/<event_id>/votes', methods=['GET'])
+def get_votes(event_id):
+    event = Event.query.get_or_404(event_id)
+    return jsonify([vote.json() for vote in event.votes])
+
 @api.route('/events/<event_id>/vote', methods=['POST'])
 def vote(event_id):
     # TODO: check that I have access to this event
@@ -195,11 +295,7 @@ def unvote(event_id):
     db.session.commit()
     return succ('Successfully unvoted.')
 
-@api.route('/events/<event_id>/votes', methods=['GET'])
-def get_votes(event_id):
-    event = Event.query.get_or_404(event_id)
-    return jsonify([vote.json() for vote in event.votes])
-
+# Invites
 @api.route('/events/<event_id>/invites')
 def get_event_invites(event_id):
     event = Event.query.get_or_404(event_id)
@@ -221,17 +317,18 @@ def send_invite(event_id, user_id):
         abort(401)
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
-def cancel_invite(event_id, user_id):
+def delete_invite(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
     if event.is_hosted_by(g.me):
         event.invitees.remove(user)
         db.session.commit()
-        return succ('Rescinded user.', 200)
+        return succ('Cancelled invite.', 200)
     else:
         abort(401)
 
+# Hosts
 @api.route('/events/<event_id>/hosts')
 def get_event_hosts(event_id):
     event = Event.query.get_or_404(event_id)
@@ -251,14 +348,14 @@ def add_host(event_id, user_id):
         abort(401)
 
 @api.route('/events/<event_id>/hosts/<user_id>', methods=['DELETE'])
-def remove_host(event_id, user_id):
+def delete_host(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
     if event.is_hosted_by(g.me) and user != g.me:
         # TODO: Add remove_host function on event
         event.hosts.remove(user)
         db.session.commit()
-        return succ('Remove host.', 200)
+        return succ('Removed host.', 200)
     else:
         abort(401)
 
@@ -271,89 +368,3 @@ def search_users_for_event(event_id, query):
     users = g.me.search(query)
     event = Event.query.get(event_id)
     return jsonify([user.json(g.me, event) for user in users])
-
-@api.route('/location', methods=['POST'])
-def update_location():
-    payload = request.get_json(g.me)
-    # TODO: this is massively inefficient
-    g.me.current_event_id = None
-    for event in g.me.feed():
-        if attending(payload['lat'], payload['lng'], event.lat, event.lng):
-            g.me.current_event_id = event.id
-    db.session.commit()
-    return succ('Location received!')
-
-@api.route('/friends/request/<user_id>', methods=['POST'])
-def friend_request(user_id):
-    user = User.query.get_or_404(user_id)
-    if g.me.friend_request(user):
-        db.session.commit()
-        return succ('Succesfully sent friend request!')
-    else:
-        return fail('You\'re already friends with this person.')
-
-@api.route('/friends/cancel/<user_id>', methods=['POST'])
-def friend_cancel(user_id):
-    friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == user_id).first()
-    if friend_request_sent is None:
-        return fail('Couldn\'t find a friend request to this person.')
-    if friend_request_sent is not None:
-        g.me.friend_requests_sent.remove(friend_request_sent)
-    db.session.commit()
-    return succ('Succesfully cancelled friend request.')
-
-@api.route('/friends/accept/<friender_id>', methods=['POST'])
-def friend_accept(friender_id):
-    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == friender_id).first()
-    if req is None:
-        return fail('This person hasn\'t sent you a friend request.')
-    friend = User.query.get(friender_id)
-    friend.friended.append(g.me)
-    g.me.friend_requests_received.remove(req)
-    db.session.commit()
-    return succ('Accepted the request!')
-
-# TODO: should this maybe use the DELETE verb?
-@api.route('/friends/reject/<user_id>', methods=['POST'])
-def friend_reject(user_id):
-    """
-    Decline a friend request.
-    """
-    req = g.me.friend_requests_received.filter(friend_requests.c.friender_id == user_id).first()
-    if req is None:
-        return fail('This person hasn\'t sent you a friend request.')
-    g.me.friend_requests_received.remove(req)
-    db.session.commit()
-    return succ('Successfully rejected request.')
-
-@api.route('/friends/remove/<user_id>', methods=['POST'])
-def friend_remove(user_id):
-    """
-    Remove friendship.
-    """
-    friendship_sent = g.me.friended.filter(friendships.c.friended_id == user_id).first()
-    friendship_received = g.me.frienders.filter(friendships.c.friender_id == user_id).first()
-    if friendship_sent is None and friendship_received is None:
-        return fail('Couldn\'t find a friendship with this person.')
-    if friendship_sent is not None:
-        g.me.friended.remove(friendship_sent)
-    if friendship_received is not None:
-        g.me.frienders.remove(friendship_received)
-    db.session.commit()
-    return succ('Succesfully removed friend.')
-
-@api.route('/friends')
-def get_friends():
-    """
-    Get friends of logged in user.
-    """
-    friends = g.me.friends()
-    return jsonify([user.json(g.me) for user in friends]), 200
-
-@api.route('/friends/requests')
-def get_friend_requests():
-    """
-    Get friend requests that have been sent to the current user.
-    """
-    friend_requests = g.me.friend_requests()
-    return jsonify([user.json(g.me) for user in friend_requests])
