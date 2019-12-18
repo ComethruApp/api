@@ -71,6 +71,18 @@ def update_me():
     db.session.commit()
     return succ('Updated profile.')
 
+@api.route('/users/me/password', methods=['PUT'])
+def update_password():
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+    if old_password is None or new_password is None:
+        return fail('Improper parameters.')
+    if g.me.is_password_correct(old_password):
+        g.me.set_password(new_password)
+        return succ('Successfully updated password!')
+    return fail('Incorrect password.', 403)
+
 @api.route('/users/search/<query>')
 def search_users(query):
     users = g.me.search(query)
