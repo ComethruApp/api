@@ -3,7 +3,6 @@ Flask-Cors
 Flask-SQLAlchemy
 Flask-WTF
 Flask-Migrate
-Flask-Mail
 Flask-Bcrypt
 Flask-Seeder
 requests
