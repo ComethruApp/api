@@ -89,9 +89,7 @@ class User(db.Model):
     def __init__(self, name, email, password, school_id, confirmed=False, year=None):
         self.name = name
         self.email = email
-        self.password = bcrypt.generate_password_hash(
-            password, app.config.get('BCRYPT_LOG_ROUNDS')
-        ).decode()
+        self.set_password(password)
         self.school_id = school_id
         self.confirmed = confirmed
         self.year = year
@@ -134,6 +132,11 @@ class User(db.Model):
 
     def is_password_correct(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password, password)
+
+    def set_password(self, password):
+        self.password = bcrypt.generate_password_hash(
+            password, app.config.get('BCRYPT_LOG_ROUNDS')
+        ).decode()
 
     def events_hosted(self):
         # TODO: the only reason "events_" is in the name of this function is because "hosted" conflicts with the
