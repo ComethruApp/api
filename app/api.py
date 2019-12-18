@@ -246,7 +246,7 @@ def get_user_current_event(user_id):
     # TODO: this is so repetitive stop
     user = User.query.get(user_id)
     if not g.me.is_friends_with(user):
-        return fail('You must be friends with this user to view their location.', 401)
+        return fail('You must be friends with this user to view their location.', 403)
     if user.current_event_id is None:
         return jsonify(None)
     event = Event.query.get(user.current_event_id)
@@ -314,7 +314,7 @@ def send_invite(event_id, user_id):
         else:
             return fail('User already invited.')
     else:
-        abort(401)
+        abort(403)
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def delete_invite(event_id, user_id):
@@ -326,7 +326,7 @@ def delete_invite(event_id, user_id):
         db.session.commit()
         return succ('Cancelled invite.', 200)
     else:
-        abort(401)
+        abort(403)
 
 # Hosts
 @api.route('/events/<event_id>/hosts')
@@ -345,7 +345,7 @@ def add_host(event_id, user_id):
         else:
             return fail('User is already a host.')
     else:
-        abort(401)
+        abort(403)
 
 @api.route('/events/<event_id>/hosts/<user_id>', methods=['DELETE'])
 def delete_host(event_id, user_id):
@@ -357,7 +357,7 @@ def delete_host(event_id, user_id):
         db.session.commit()
         return succ('Removed host.', 200)
     else:
-        abort(401)
+        abort(403)
 
 @api.route('/events/<event_id>/invites/search/<query>')
 def search_users_for_event(event_id, query):
