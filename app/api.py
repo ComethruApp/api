@@ -63,6 +63,14 @@ def get_user(user_id):
 def get_me():
     return jsonify(g.me.json(g.me))
 
+@api.route('/users/me', methods=['PUT'])
+def update_me():
+    data = request.get_json()
+    # TODO: make method of User
+    g.me.name = data['name']
+    db.session.commit()
+    return succ('Updated profile.')
+
 @api.route('/users/search/<query>')
 def search_users(query):
     users = g.me.search(query)
