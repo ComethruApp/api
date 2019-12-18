@@ -30,20 +30,12 @@ def verify_token():
 ###########################
 # Lifecycle/miscellaneous #
 ###########################
+
 @api.route('/heartbeat')
 def heartbeat():
     return jsonify({
         'maintenance': bool(os.environ.get('MAINTENANCE', False)),
         'min_version': 0,
-    })
-
-@api.route('/status')
-def about():
-    return jsonify({
-        'users': User.query.count(),
-        'events': Event.query.count(),
-        # Don't include test school
-        'schools': School.query.count() - 1,
     })
 
 @api.route('/location', methods=['POST'])
