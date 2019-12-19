@@ -52,7 +52,6 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=True)
     password = db.Column(db.String(255), nullable=False)
-    avatar = db.Column(db.String(120), nullable=True, default='')
     confirmed = db.Column(db.Boolean, default=False)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
@@ -62,9 +61,7 @@ class User(db.Model):
     facebook_id = db.Column(db.String(100), nullable=True)
     facebook_name = db.Column(db.String(50), nullable=True)
 
-    # Columns related to current position
-    lat = db.Column(db.Float, nullable=True)
-    lng = db.Column(db.Float, nullable=True)
+    # Things related to location
     current_event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
 
     # Relationships
