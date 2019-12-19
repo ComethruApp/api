@@ -310,7 +310,7 @@ def delete_review(event_id):
 @api.route('/events/<event_id>/invites')
 def get_event_invites(event_id):
     event = Event.query.get_or_404(event_id)
-    return jsonify([user.json(g.me, event) for user in event.invitees])
+    return jsonify([user.json(g.me, event) for user in event.invites])
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def send_invite(event_id, user_id):
@@ -333,7 +333,7 @@ def delete_invite(event_id, user_id):
     user = User.query.get_or_404(user_id)
     # TODO: allow non-host users when transitive_invites is on to remove their own invitations but nobody elses
     if event.is_hosted_by(g.me):
-        event.invitees.remove(user)
+        event.invites.remove(user)
         db.session.commit()
         return succ('Cancelled invite.', 200)
     else:

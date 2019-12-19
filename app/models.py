@@ -343,7 +343,7 @@ class Event(db.Model):
         'User', secondary=hostships,
         backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic'
     )
-    invitees = db.relationship(
+    invites = db.relationship(
         'User', secondary=invitations,
         backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
     )
@@ -378,14 +378,14 @@ class Event(db.Model):
         """
         if self.is_invited(user):
             return False
-        self.invitees.append(user)
+        self.invites.append(user)
         return True
 
     def is_invited(self, user) -> bool:
         """
         Return whether there is an invitation to this event for the given user.
         """
-        return self.invitees.filter(invitations.c.user_id == user.id).count() > 0
+        return self.invites.filter(invitations.c.user_id == user.id).count() > 0
 
     def happening_now(self):
         # TODO: don't get time every repetition
