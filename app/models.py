@@ -331,11 +331,11 @@ class Event(db.Model):
     name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(1024))
 
-    location = db.Column(db.String(127), nullable=False)
-    # TODO remove these
+    # Location
+    location = db.Column(db.String(100), nullable=False)
     lat = db.Column(db.Float)
     lng = db.Column(db.Float)
-    address = db.Column(db.String(255), nullable=True)
+    address = db.Column(db.String(256), nullable=True)
 
     open = db.Column(db.Boolean, default=True)
     transitive_invites = db.Column(db.Boolean, default=False)
