@@ -88,6 +88,7 @@ def search_users(query):
     users = g.me.search(query)
     return jsonify([user.json(g.me) for user in users])
 
+# Blocks
 @api.route('/users/<user_id>/block', methods=['POST'])
 def block_user(user_id):
     user = User.query.get(user_id)
@@ -97,7 +98,7 @@ def block_user(user_id):
     else:
         return fail('You\'ve already blocked this person.')
 
-@api.route('/users/<user_id>/unblock', methods=['POST'])
+@api.route('/users/<user_id>/block', methods=['DELETE'])
 def unblock_user(user_id):
     user = User.query.get(user_id)
     if g.me.unblock(user):
