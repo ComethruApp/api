@@ -27,6 +27,7 @@ def verify_token():
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
+        g.json = request.get_json()
 
 
 ###########################
@@ -42,10 +43,9 @@ def heartbeat():
 
 @api.route('/location', methods=['POST'])
 def update_location():
-    payload = request.get_json(g.me)
     g.me.current_event_id = None
     for event in g.me.feed():
-        if attending(payload['lat'], payload['lng'], event.lat, event.lng):
+        if attending(g.json['lat'], g.json['lng'], event.lat, event.lng):
             g.me.current_event_id = event.id
     db.session.commit()
     return succ('Location received!')
@@ -66,17 +66,15 @@ def get_me():
 
 @api.route('/users/me', methods=['PUT'])
 def update_me():
-    data = request.get_json()
     # TODO: make method of User
-    g.me.name = data['name']
+    g.me.name = g.json['name']
     db.session.commit()
     return succ('Updated profile.')
 
 @api.route('/users/me/password', methods=['PUT'])
 def update_password():
-    data = request.get_json()
-    old_password = data.get('old_password')
-    new_password = data.get('new_password')
+    old_password = g.json.get('old_password')
+    new_password = g.json.get('new_password')
     if not old_password or not new_password:
         return fail('Improper parameters.')
     if g.me.is_password_correct(old_password):
@@ -112,8 +110,7 @@ def unblock_user(user_id):
 # Facebook
 @api.route('/users/me/facebook', methods=['POST'])
 def facebook_connect():
-    data = request.get_json()
-    g.me.facebook_connect(data['id'], data['name'])
+    g.me.facebook_connect(g.json['id'], g.json['name'])
     db.session.commit()
     return succ('Successfully connected!')
 
@@ -208,8 +205,7 @@ def get_event(event_id):
 
 @api.route('/events', methods=['POST'])
 def create_event():
-    data = request.get_json(g.me)
-    event = Event(data, school_id=g.me.school_id)
+    event = Event(g.json, school_id=g.me.school_id)
     event.hosts = [g.me]
     db.session.add(event)
     db.session.commit()
@@ -217,12 +213,11 @@ def create_event():
 
 @api.route('/events/<event_id>', methods=['PUT'])
 def update_event(event_id):
-    data = request.get_json(g.me)
     event = Event.query.get_or_404(event_id)
     if not event.is_hosted_by(g.me):
         abort(403)
     # TODO: evaluate security concerns...
-    for key, value in data.items():
+    for key, value in g.json.items():
         setattr(event, key, value)
     db.session.commit()
     return jsonify(event.json(g.me)), 202
@@ -293,11 +288,10 @@ def get_reviews(event_id):
 @api.route('/events/<event_id>/reviews', methods=['POST'])
 def create_review(event_id):
     # TODO: check that I have access to this event
-    data = request.get_json()
     event = Event.query.get(event_id)
-    if data['positive'] and data['negative']:
+    if g.json['positive'] and g.json['negative']:
         fail('You can\'t review positively and negatively at the same time.')
-    g.me.review_on(event, data['positive'], data['negative'], data['body'])
+    g.me.review_on(event, g.json['positive'], g.json['negative'], g.json['body'])
     db.session.commit()
     return succ('Reviewed successfully.')
 
