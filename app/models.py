@@ -272,6 +272,12 @@ class User(db.Model):
         self.facebook_id = None
         self.facebook_name = None
 
+    def facebook_connections(self):
+        """
+        Find Facebook friends of this user who are also registered.
+        """
+        return
+
     def json(self, me, event=None):
         """
         Generate JSON representation of this user.
