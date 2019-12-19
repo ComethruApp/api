@@ -244,14 +244,14 @@ class User(db.Model):
         events = events.order_by(Event.open)
         return events.all()
 
-    def review_on(self, event, positive, negative, review):
+    def review_on(self, event, positive, negative, body):
         review = event.get_review(self)
         if review is None:
             review = Review(self, event)
             self.reviews.append(review)
         review.positive = positive
         review.negative = negative
-        review.review = review
+        review.body = body
 
     def unreview_on(self, event):
         review = event.get_review(self)
@@ -428,7 +428,6 @@ class Event(db.Model):
             'invited_me': self.is_invited(me),
             'people': self.people(),
             'review': review.json() if review else None,
-            'review': review.review if review else None,
             'rating': self.rating(),
             'hosts': [host.json(me) for host in self.hosts],
         })
