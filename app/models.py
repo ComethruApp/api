@@ -31,6 +31,11 @@ invitations = db.Table('invitations',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
+taggings = db.Table('taggings',
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
+    db.Column('tag_name', db.String, db.ForeignKey('tags.name'), nullable=False),
+)
+
 blocks = db.Table('blocks',
     db.Column('blocker_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
     db.Column('blocked_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
@@ -430,8 +435,23 @@ class Event(db.Model):
             'review': review.json() if review else None,
             'rating': self.rating(),
             'hosts': [host.json(me) for host in self.hosts],
+            'tags': [tag.name for tag in self.tags],
         })
         return raw
+
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+
+    name = db.Column(db.String(32), primary_key=True)
+
+    events = db.relationship(
+        'Event', secondary=taggings,
+        backref=db.backref('tags', lazy='dynamic'), lazy='dynamic'
+    )
+
+    def __init__(self, name):
+        self.name = name
 
 
 class Review(db.Model):
