@@ -357,15 +357,24 @@ class Event(db.Model):
     )
     reviews = db.relationship('Review', backref='event', lazy=True)
 
-    def __init__(self, raw, school_id):
+    def update(self, raw):
+        """
+        Take dictionary of raw data and use it to set fields.
+        """
         self.time = datetime.datetime.fromisoformat(raw.pop('time'))
         self.time = self.time.astimezone(datetime.timezone.utc)
         raw_end_time = raw.pop('end_time', None)
         if raw_end_time:
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
-        for field in raw:
-            setattr(self, field, raw[field])
+        # TODO use set?
+        for field in ('name', 'description', 'location', 'lat', 'lng', 'address', 'open',
+                      'capacity', 'transitive_invites'):
+            if field in raw:
+                setattr(self, field, raw[field])
+
+    def __init__(self, raw, school_id):
+        self.update(raw)
         self.registered_on = datetime.datetime.utcnow()
         self.school_id = school_id
 

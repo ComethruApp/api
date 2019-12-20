@@ -216,9 +216,7 @@ def update_event(event_id):
     event = Event.query.get_or_404(event_id)
     if not event.is_hosted_by(g.me):
         abort(403)
-    # TODO: evaluate security concerns...
-    for key, value in g.json.items():
-        setattr(event, key, value)
+    event.update(g.json)
     db.session.commit()
     return jsonify(event.json(g.me)), 202
 
