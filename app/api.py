@@ -263,13 +263,13 @@ def get_user_current_event(user_id):
 
 @api.route('/users/me/events')
 def get_my_events():
-    events = g.me.events_hosted()
+    events = g.me.events_hosted(include_past=True)
     return jsonify([event.json(g.me) for event in events])
 
 @api.route('/users/<user_id>/events')
 def get_user_events(user_id):
     user = User.query.get_or_404(user_id)
-    events = user.events_hosted()
+    events = user.events_hosted(include_past=(g.me == user))
     return jsonify([event.json(g.me) for event in events])
 
 @api.route('/events/<event_id>/friends')

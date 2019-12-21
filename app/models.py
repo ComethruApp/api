@@ -140,10 +140,23 @@ class User(db.Model):
             password, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
 
-    def events_hosted(self):
+    def events_hosted(self, include_past=False):
+        """
+        Get events this user is a host for.
+        :param include_past: include events that have already ended.
+        """
         # TODO: the only reason "events_" is in the name of this function is because "hosted" conflicts with the
         # backref name that it uses... find a way to be cleaner about that.
-        return self.hosted.order_by(desc(Event.time)).all()
+        events = self.hosted.order_by(desc(Event.time))
+        # TODO: can you see private events this way??
+        if not include_past:
+            events = events.filter(
+                #Event.time < now,
+                Event.ended == False,
+                ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time)) | \
+                        ((Event.end_time != None) & (now < Event.end_time)),
+            )
+        return events.all()
 
     def search(self, query: str):
         users = User.query.filter(User.school_id == self.school_id,
