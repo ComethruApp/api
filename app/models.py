@@ -150,6 +150,7 @@ class User(db.Model):
         events = self.hosted.order_by(desc(Event.time))
         # TODO: can you see private events this way??
         if not include_past:
+            now = datetime.datetime.utcnow()
             events = events.filter(
                 #Event.time < now,
                 Event.ended == False,
