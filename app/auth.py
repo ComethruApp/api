@@ -3,7 +3,7 @@ from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
 
-from app import app, db, mail, bcrypt
+from app import app, db, bcrypt
 from app.models import User, School, BlacklistedToken
 from app.util import succ, fail
 from app.mailgun import send_email
