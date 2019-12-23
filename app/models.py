@@ -449,7 +449,7 @@ class Event(db.Model):
 
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
-                                                   'location', 'lat', 'lng',
+                                                   'location', 'address', 'lat', 'lng',
                                                    'time', 'end_time', 'open',
                                                    'transitive_invites', 'capacity')}
         review = self.get_review(me)
