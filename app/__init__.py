@@ -4,7 +4,6 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_mail import Mail
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_seeder import FlaskSeeder
@@ -16,7 +15,6 @@ app.testing = False
 CORS(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-mail = Mail(app)
 bcrypt = Bcrypt(app)
 seeder = FlaskSeeder()
 seeder.init_app(app, db)
