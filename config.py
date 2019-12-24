@@ -21,3 +21,7 @@ class Config(object):
 
     ONESIGNAL_API_KEY = os.environ['ONESIGNAL_API_KEY']
     ONESIGNAL_APP_ID = os.environ['ONESIGNAL_APP_ID']
+
+    FACEBOOK_APP_ID = os.environ['FACEBOOK_APP_ID']
+    FACEBOOK_APP_SECRET = os.environ['FACEBOOK_APP_SECRET']
+    FACEBOOK_API_TOKEN = os.environ['FACEBOOK_API_TOKEN']
