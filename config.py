@@ -18,3 +18,6 @@ class Config(object):
     MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
     MAILGUN_SENDER_NAME = 'Comethru'
     MAILGUN_SENDER = 'hello@comethru.io'
+
+    ONESIGNAL_API_KEY = os.environ['ONESIGNAL_API_KEY']
+    ONESIGNAL_APP_ID = os.environ['ONESIGNAL_APP_ID']

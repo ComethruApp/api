@@ -3,6 +3,7 @@ from app import db
 from app.models import User, Event, School, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
+from app.notifier import notifier
 import os
 
 api = Blueprint('api', __name__)
@@ -126,6 +127,7 @@ def create_friend_request(user_id):
     user = User.query.get_or_404(user_id)
     if g.me.friend_request(user):
         db.session.commit()
+        notifier.friend_request(user_from=g.me, user_to=user)
         return succ('Succesfully sent friend request!')
     else:
         return fail('You\'re already friends with this person.')
