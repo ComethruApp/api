@@ -14,7 +14,6 @@ class Notifier:
                                  'data': {'task': 'TODO'},
                           },
                           headers={'Authorization': 'Basic ' + app.config['ONESIGNAL_API_KEY']})
-        print(r.text)
-        return r
+        return r.ok
 
 notifier = Notifier()
