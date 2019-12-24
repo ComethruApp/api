@@ -3,7 +3,7 @@ from app import app
 #from app.models import User
 
 class Notifier:
-    def friend_request(user_from, user_to):
+    def friend_request(self, user_from, user_to):
         return requests.post('https://onesignal.com/api/v1/notifications',
                              json={
                                  'app_id': app.config['ONESIGNAL_APP_ID'],
