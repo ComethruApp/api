@@ -4,7 +4,7 @@ from app import app
 
 class Notifier:
     def friend_request(self, user_from, user_to):
-        return requests.post('https://onesignal.com/api/v1/notifications',
+        r = requests.post('https://onesignal.com/api/v1/notifications',
                              json={
                                  'app_id': app.config['ONESIGNAL_APP_ID'],
                                  'included_segments': [],
@@ -13,5 +13,7 @@ class Notifier:
                                  'contents': {'en': user_from.name + ' has sent you a friend request on Comethru.'},
                                  'data': {'task': 'TODO'},
                              })
+        print(r.text)
+        return r
 
 notifier = Notifier()
