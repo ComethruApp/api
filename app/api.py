@@ -24,7 +24,7 @@ def forbidden(error):
 @api.before_request
 def verify_token():
     if request.method != 'OPTIONS':
-        token = request.headers.get('Authorization', request.params.get('token', None))
+        token = request.headers.get('Authorization', request.args.get('token', None))
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
