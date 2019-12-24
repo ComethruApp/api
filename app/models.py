@@ -1,4 +1,5 @@
 from app import app, db, bcrypt
+from app.facebook import facebook
 from sqlalchemy import desc
 import datetime
 import jwt
@@ -195,7 +196,6 @@ class User(db.Model):
     def is_blocking(self, user):
         return self.blocked.filter(blocks.c.blocked_id == user.id).count() > 0
 
-
     def friends(self):
         """
         Get a list of people you have friended and who have friended you whose friendships are confirmed.
@@ -286,11 +286,14 @@ class User(db.Model):
         self.facebook_id = None
         self.facebook_name = None
 
-    def facebook_connections(self):
+    def facebook_friends(self):
         """
         Find Facebook friends of this user who are also registered.
         """
-        return
+        friends = facebook.get_friends(self.facebook_id)
+        print("Facebook friends:")
+        print(friends)
+        return []
 
     def json(self, me, event=None):
         """

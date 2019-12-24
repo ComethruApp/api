@@ -187,9 +187,19 @@ def get_friends():
 @api.route('/friends/requests')
 def get_friend_requests():
     """
-    Get friend requests that have been sent to the current user.
+    Get users who have sent friend requests to the current user.
     """
     friend_requests = g.me.friend_requests()
+    return jsonify([user.json(g.me) for user in friend_requests])
+
+@api.route('/friends/facebook', methods=['GET'])
+def get_facebook_friends():
+    """
+    Get a list of users who have connected to Facebook and are friends with this user there.
+    """
+    if g.me.facebook_id is None:
+        return jsonify([])
+    users = g.me.facebook_friends()
     return jsonify([user.json(g.me) for user in friend_requests])
 
 ##########
