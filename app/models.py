@@ -290,10 +290,11 @@ class User(db.Model):
         """
         Find Facebook friends of this user who are also registered.
         """
+        # Facebook will only return friends who also use this app.
         friends = facebook.get_friends(self.facebook_id)
-        print("Facebook friends:")
-        print(friends)
-        return []
+        facebook_ids = [int(user['id']) for user in friends]
+        users = User.query.filter(User.facebook_id.in_(facebook_ids))
+        return users.all()
 
     def json(self, me, event=None):
         """
