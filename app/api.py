@@ -4,6 +4,7 @@ from app.models import User, Event, School, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
 from app.notifier import notifier
+from app.facebook import facebook
 import os
 
 api = Blueprint('api', __name__)
@@ -251,6 +252,11 @@ def end_event(event_id):
     event.ended = True
     db.session.commit()
     return succ('Event ended successfully.')
+
+@api.route('/events/facebook')
+def facebook_events():
+    events = facebook.get_events(g.me.facebook_id)
+    return jsonify([event for event in events])
 
 @api.route('/users/me/events/current')
 def get_my_current_event():
