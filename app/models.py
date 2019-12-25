@@ -292,7 +292,7 @@ class User(db.Model):
         """
         # Facebook will only return friends who also use this app.
         friends = facebook.get_friends(self.facebook_id)
-        facebook_ids = [int(user['id']) for user in friends]
+        facebook_ids = [user['id'] for user in friends]
         users = User.query.filter(User.facebook_id.in_(facebook_ids))
         return users.all()
 
