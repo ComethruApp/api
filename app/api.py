@@ -200,7 +200,7 @@ def get_facebook_friends():
     if g.me.facebook_id is None:
         return jsonify([])
     users = g.me.facebook_friends()
-    return jsonify([user.json(g.me) for user in friend_requests])
+    return jsonify([user.json(g.me) for user in users])
 
 ##########
 # Events #
