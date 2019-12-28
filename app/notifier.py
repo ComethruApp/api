@@ -39,4 +39,10 @@ class Notifier:
                           content=user_from.name + ' is now your friend.',
                           data={'task': 'TODO'})
 
+    def send_invite(self, event, user_from, user_to):
+        return self._send(user_to.id,
+                          heading='You\re invited!',
+                          content=user_from.name + ' has invited you to ' + event.name + '! Come thru!',
+                          data={'task': 'TODO'})
+
 notifier = Notifier()

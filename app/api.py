@@ -342,9 +342,9 @@ def send_invite(event_id, user_id):
     user = User.query.get_or_404(user_id)
     # TODO: store who created an invitation, and allow users who aren't hosts to only remove their invitations
     if event.transitive_invites or event.is_hosted_by(g.me):
-        # Check out that intuitive syntax. Glorious. Like washing machines.
         if event.invite(user):
             db.session.commit()
+            notifier.send_invite(event, user_from=g.me, user_to=user)
             return succ('Invited user.')
         else:
             return fail('User already invited.')
