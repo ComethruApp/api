@@ -25,6 +25,7 @@ class Notifier:
                                  'data': data,
                           },
                           headers={'Authorization': 'Basic ' + app.config['ONESIGNAL_API_KEY']})
+        return r.ok
 
     def friend_request(self, user_from, user_to):
         return self._send(user_to.id,
