@@ -20,7 +20,7 @@ class Notifier:
                                  'app_id': app.config['ONESIGNAL_APP_ID'],
                                  'included_segments': [],
                                  'include_external_user_ids': to,
-                                 'headings': {'en': header},
+                                 'headings': {'en': heading},
                                  'contents': {'en': content},
                                  'data': data,
                           },
