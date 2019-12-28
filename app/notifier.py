@@ -3,7 +3,7 @@ from app import app
 #from app.models import User
 
 class Notifier:
-    def _send(to, heading: str, content: str, data: dict):
+    def _send(to, heading: str = None, content: str = None, data: dict = None):
         """
         Send a notification to OneSignal's API.
 
