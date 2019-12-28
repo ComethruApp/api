@@ -32,9 +32,9 @@ def verify_token():
         g.json = request.get_json()
 
 
-###########################
-# Lifecycle/miscellaneous #
-###########################
+#################
+# Miscellaneous #
+#################
 
 @api.route('/heartbeat')
 def heartbeat():
@@ -45,10 +45,20 @@ def heartbeat():
 
 @api.route('/location', methods=['POST'])
 def update_location():
+    lat = g.json['lat']
+    lng = g.json['lng']
+    # In order to save some processing, first check if the user is still at their current event
+    # (which they probably will be a decent percentage of the time).
+    if g.me.current_event_id is not None:
+        event = Event.query.get(g.me.current_event_id)
+        if attending(lat, lng, event.lat, event.lng):
+            return succ('Location received, no event change.')
+
     g.me.current_event_id = None
     for event in g.me.feed():
-        if attending(g.json['lat'], g.json['lng'], event.lat, event.lng):
+        if attending(lat, lng, event.lat, event.lng):
             g.me.current_event_id = event.id
+            break
     db.session.commit()
     return succ('Location received!')
 
