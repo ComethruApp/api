@@ -210,7 +210,6 @@ class User(db.Model):
         return self.friended.filter(User.current_event_id == event_id).all() \
              + self.frienders.filter(User.current_event_id == event_id).all()
 
-
     def friend_requests(self):
         """
         Get a list of users who have sent friend requests to you that are not confirmed yet.
