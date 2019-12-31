@@ -453,10 +453,12 @@ class Event(db.Model):
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'address', 'lat', 'lng',
-                                                   'time', 'end_time', 'open',
+                                                   'open',
                                                    'transitive_invites', 'capacity')}
         review = self.get_review(me)
         raw.update({
+            'time': self.time.isoformat(),
+            'end_time': self.end_time.isoformat() if self.end_time else None,
             'happening_now': self.happening_now(),
             'mine': self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
