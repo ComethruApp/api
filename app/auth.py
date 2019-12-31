@@ -48,11 +48,11 @@ def confirm_token(token):
 def register():
     # get the post data
     payload = request.get_json()
+    email = payload.get('email').lower()
     # check if user already exists
-    user = User.query.filter_by(email=payload.get('email')).first()
+    user = User.query.filter_by(email=email).first()
     if not user:
         try:
-            email = payload['email'].lower()
             with open('resources/email_blacklist.txt') as f:
                 # TODO: should we just keep this in memory continuously rather than reading it every time?
                 email_blacklist = f.read().split('\n')
@@ -96,11 +96,10 @@ def register():
 def login():
     # get the post data
     payload = request.get_json()
+    email = payload.get('email').lower()
     try:
         # fetch the user data
-        user = User.query.filter_by(
-            email=payload.get('email')
-        ).first()
+        user = User.query.filter_by(email=email).first()
         if user and user.is_password_correct(payload.get('password')):
             if not user.confirmed:
                 return fail('Please check your email to confirm your account before logging in!', 401)
