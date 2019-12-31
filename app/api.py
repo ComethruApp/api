@@ -158,7 +158,7 @@ def accept_friend_request(friender_id):
     friend.friended.append(g.me)
     g.me.friend_requests_received.remove(req)
     db.session.commit()
-    notifier.accept_friend_request(g.me, user)
+    notifier.accept_friend_request(g.me, friend)
     return succ('Accepted the request!')
 
 @api.route('/friends/<user_id>/reject', methods=['POST'])
