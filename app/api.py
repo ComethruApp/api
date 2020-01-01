@@ -263,6 +263,22 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
+@api.route('/events/<event_id>/tags/<tag_name>', methods=['GET'])
+def add_tag(event_id, tag_name):
+    event = Event.query.get_or_404(event_id)
+    tag_name = tag_name.lower()
+    if not event.is_hosted_by(g.me):
+        abort(403)
+    # First, check if the event already has this tag.
+    if event.has_tag(tag_name):
+        return fail('Event already has this tag.')
+    if event.add_tag(tag_name):
+        return succ('Added tag!')
+    else:
+        # If the tag is blacklisted or there was another problem
+        return fail('Tag not added.')
+    db.session.commit()
+
 @api.route('/events/facebook')
 def facebook_events():
     events = facebook.get_events(g.me.facebook_id)

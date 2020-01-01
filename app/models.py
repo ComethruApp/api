@@ -421,6 +421,22 @@ class Event(db.Model):
         """
         return self.invites.filter(invitations.c.user_id == user.id).count() > 0
 
+    def has_tag(self, tag_name) -> bool:
+        return self.tags.filter(taggings.c.name == tag_name).count() > 0
+
+    def add_tag(self, tag_name) -> bool:
+        tag = Tag.query.get(tag_name)
+        # Do we need to create the tag in the database?
+        if tag is None:
+            # Fail if the tag is blacklisted
+            with open('resources/tag_blacklist.txt', 'r') as f:
+                if tag in f.readlines():
+                    return False
+            tag = Tag(tag_name)
+            db.session.add(tag)
+        self.tags.append(tag)
+        return True
+
     def happening_now(self):
         # TODO: don't get time every repetition
         now = datetime.datetime.utcnow()
