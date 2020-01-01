@@ -263,7 +263,7 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
-@api.route('/events/<event_id>/tags/<tag_name>', methods=['GET'])
+@api.route('/events/<event_id>/tags/<tag_name>')
 def add_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
     tag_name = tag_name.lower()
@@ -278,6 +278,16 @@ def add_tag(event_id, tag_name):
         # If the tag is blacklisted or there was another problem
         return fail('Tag not added.')
     db.session.commit()
+
+@api.route('/events/<event_id>/tags/<tag_name>', methods=['DELETE'])
+def remove_tag(event_id, tag_name):
+    pass
+
+@api.route('/tags/search/<query>')
+def search_tags(query):
+    query = query.lower()
+    tags = Tag.query.filter(User.name.ilike('%' + query + '%'))
+    return jsonify([tag.name for tag in tags])
 
 @api.route('/events/facebook')
 def facebook_events():
