@@ -87,6 +87,7 @@ class User(db.Model):
             primaryjoin=(blocks.c.blocker_id == id),
             secondaryjoin=(blocks.c.blocked_id == id),
             backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
+    updates = db.relationship('Update', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)
 
     def __init__(self, name, email, password, school_id, confirmed=False, year=None):
@@ -372,6 +373,7 @@ class Event(db.Model):
         'User', secondary=invitations,
         backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
     )
+    updates = db.relationship('Update', backref='event', lazy=True)
     reviews = db.relationship('Review', backref='event', lazy=True)
 
     def update(self, raw):
@@ -437,7 +439,7 @@ class Event(db.Model):
         self.tags.append(tag)
         return True
 
-    def remove_tag(self, tag_name):
+    def remove_tag(self, tag_name) -> bool:
         tag = Tag.query.get(tag_name)
         self.tags.remove(tag)
         return True
@@ -504,6 +506,22 @@ class Tag(db.Model):
 
     def __init__(self, name):
         self.name = name
+
+
+class Update(db.Model):
+    __tablename__ = 'updates'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    body = db.Column(db.String(1024))
+
+    # Relationships
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
+
+    def __init__(self, user, event):
+        self.user_id = user.id
+        self.event_id = event.id
 
 
 class Review(db.Model):
