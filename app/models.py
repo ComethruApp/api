@@ -523,6 +523,15 @@ class Update(db.Model):
         self.user_id = user.id
         self.event_id = event.id
 
+    def json(self, me, include_event=False):
+        raw = {
+            'body': self.body,
+        }
+        raw['user'] = self.user.json(me)
+        if include_event:
+            raw['event'] = self.event.json(me)
+        return raw
+
 
 class Review(db.Model):
     __tablename__ = 'reviews'
