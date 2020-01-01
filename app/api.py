@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, abort, g
 from app import db
-from app.models import User, Event, School, friendships, friend_requests
+from app.models import User, Event, School, Update, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
 from app.notifier import notifier
@@ -437,3 +437,32 @@ def search_users_for_event(event_id, query):
     users = g.me.search(query)
     event = Event.query.get(event_id)
     return jsonify([user.json(g.me, event) for user in users])
+
+# Updates
+@api.route('/events/<event_id>/updates')
+def get_event_updates(event_id):
+    event = Event.query.get_or_404(event_id)
+    # TODO: Check that we have access
+    return jsonify([update.json(g.me) for update in event.updates])
+
+@api.route('/events/<event_id>/updates', methods=['POST'])
+def create_event_update(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.is_hosted_by(g.me):
+        update = Update(g.me, event)
+        db.session.commit()
+        # TODO: send notification to subscribed users
+        return succ('Created events.')
+    else:
+        abort(403)
+
+@api.route('/events/<event_id>/delete/<update_id>', methods=['DELETE'])
+def delete_update(event_id, update_id):
+    event = Event.query.get_or_404(event_id)
+    update = Update.query.get_or_404(update_id)
+    if event.is_hosted_by(g.me):
+        event.updates.remove(update)
+        db.session.commit()
+        return succ('Deleted update.', 200)
+    else:
+        abort(403)
