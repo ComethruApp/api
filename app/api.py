@@ -273,15 +273,23 @@ def add_tag(event_id, tag_name):
     if event.has_tag(tag_name):
         return fail('Event already has this tag.')
     if event.add_tag(tag_name):
+        db.session.commit()
         return succ('Added tag!')
-    else:
-        # If the tag is blacklisted or there was another problem
-        return fail('Tag not added.')
-    db.session.commit()
+    # If the tag is blacklisted or there was another problem
+    return fail('Tag not added.')
 
 @api.route('/events/<event_id>/tags/<tag_name>', methods=['DELETE'])
 def remove_tag(event_id, tag_name):
-    pass
+    event = Event.query.get_or_404(event_id)
+    if not event.is_hosted_by(g.me):
+        abort(403)
+    if not event.has_tag(tag_name):
+        return fail('Event does not have this tag.')
+    if event.remove_tag(tag_name)
+        db.session.commit()
+        return succ('Removed tag.')
+    # Should not be reached, but just in case.
+    return fail('Tag not removed.')
 
 @api.route('/tags/search/<query>')
 def search_tags(query):

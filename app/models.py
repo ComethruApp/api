@@ -437,6 +437,11 @@ class Event(db.Model):
         self.tags.append(tag)
         return True
 
+    def remove_tag(self, tag_name):
+        tag = Tag.query.get(tag_name)
+        self.tags.remove(tag)
+        return True
+
     def happening_now(self):
         # TODO: don't get time every repetition
         now = datetime.datetime.utcnow()
