@@ -285,7 +285,7 @@ def remove_tag(event_id, tag_name):
         abort(403)
     if not event.has_tag(tag_name):
         return fail('Event does not have this tag.')
-    if event.remove_tag(tag_name)
+    if event.remove_tag(tag_name):
         db.session.commit()
         return succ('Removed tag.')
     # Should not be reached, but just in case.
