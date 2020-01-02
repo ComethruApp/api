@@ -462,6 +462,7 @@ def delete_update(event_id, update_id):
     update = Update.query.get_or_404(update_id)
     if event.is_hosted_by(g.me):
         event.updates.remove(update)
+        db.session.delete(update)
         db.session.commit()
         return succ('Deleted update.', 200)
     else:
