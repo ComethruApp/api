@@ -424,7 +424,7 @@ class Event(db.Model):
         return self.invites.filter(invitations.c.user_id == user.id).count() > 0
 
     def has_tag(self, tag_name) -> bool:
-        return self.tags.filter(taggings.c.name == tag_name).count() > 0
+        return self.tags.filter(taggings.c.tag_name == tag_name).count() > 0
 
     def add_tag(self, tag_name) -> bool:
         tag = Tag.query.get(tag_name)
@@ -457,7 +457,7 @@ class Event(db.Model):
 
     def get_review(self, user):
         return Review.query.filter(Review.event_id == self.id,
-                                 Review.user_id == user.id).first()
+                                   Review.user_id == user.id).first()
 
     def rating(self):
         reviews = Review.query.filter(Review.event_id == self.id)
