@@ -263,7 +263,7 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
-@api.route('/events/<event_id>/tags/<tag_name>')
+@api.route('/events/<event_id>/tags/<tag_name>', methods=['POST'])
 def add_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
     tag_name = tag_name.lower()
