@@ -452,7 +452,7 @@ def create_event_update(event_id):
         update = Update(g.me, event)
         db.session.commit()
         # TODO: send notification to subscribed users
-        return succ('Created events.')
+        return jsonify(update.json(g.me))
     else:
         abort(403)
 
