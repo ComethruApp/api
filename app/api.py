@@ -445,6 +445,13 @@ def get_event_updates(event_id):
     # TODO: Check that we have access
     return jsonify([update.json(g.me) for update in event.updates])
 
+@api.route('/events/<event_id>/updates/<update_id>')
+def get_event_update(event_id, update_id):
+    #event = Event.query.get_or_404(event_id)
+    update = Update.query.get_or_404(update_id)
+    # TODO: Check that we have access
+    return jsonify(update.json(g.me))
+
 @api.route('/events/<event_id>/updates', methods=['POST'])
 def create_event_update(event_id):
     event = Event.query.get_or_404(event_id)
