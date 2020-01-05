@@ -463,6 +463,15 @@ def create_event_update(event_id):
     else:
         abort(403)
 
+@api.route('/events/<event_id>/updates/<update_id>', methods=['PUT'])
+def update_event_update(event_id, update_id):
+    event = Event.query.get_or_404(event_id)
+    if event.is_hosted_by(g.me):
+        update = Update.query.get_or_404(update_id)
+        update.body = g.json['body']
+        return jsonify(update.json(g.me))
+    return fail('Could not edit update.')
+
 @api.route('/events/<event_id>/delete/<update_id>', methods=['DELETE'])
 def delete_update(event_id, update_id):
     event = Event.query.get_or_404(event_id)
