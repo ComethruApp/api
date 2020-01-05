@@ -525,6 +525,7 @@ class Update(db.Model):
 
     def json(self, me, include_event=False):
         raw = {
+            'id': self.id,
             'body': self.body,
         }
         raw['user'] = self.user.json(me)
