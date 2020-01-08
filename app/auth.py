@@ -85,7 +85,7 @@ def register():
 
             send_confirmation_email(user)
 
-            return succ('Check your email to confirm your address, then log in!', 201)
+            return succ('Check your email to confirm your address, then log in! (The email may take a few moments to deliver.)', 201)
         except Exception as e:
             # TODO: eventually we should just return the error to the client
             raise e
