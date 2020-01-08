@@ -105,7 +105,8 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and user.is_password_correct(payload.get('password')):
             if not user.confirmed:
-                return fail('Please check your email to confirm your account before logging in!', 401)
+                send_confirmation_email(user)
+                return fail('Please check your email to confirm your account before logging in! It may take a few minutes to arrive. We have re-sent the email to you just in case.', 401)
             token, expires_in = user.generate_token()
             if token:
                 response_data = {
