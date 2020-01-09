@@ -165,7 +165,7 @@ class User(db.Model):
         users = User.query.filter(User.school_id == self.school_id,
                                   User.id != self.id,
                                   User.name.ilike('%' + query + '%'))
-        return users.limit(15).all()
+        return users.limit(10).all()
 
     def follow(self, user):
         if not self.is_following(user):
