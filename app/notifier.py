@@ -31,7 +31,7 @@ class Notifier:
         return self._send(user_to.id,
                           heading='New friend request',
                           content=user_from.name + ' has sent you a friend request.',
-                          data={'task': ('user', user_from.id)})
+                          data={'task': ('tabs', 'users')})
 
     def accept_friend_request(self, user_from, user_to):
         return self._send(user_to.id,
