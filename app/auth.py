@@ -13,10 +13,10 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/confirm/<token>')
 def confirm_email(token):
-    try:
-        email = confirm_token(token)
-    except:
-        return render_template('confirm.html', message='Invalid or expired link.'), 401
+    email = confirm_token(token)
+    # If link is expired, False will be returned.
+    if not email:
+        return render_template('confirm.html', message='Invalid or expired link. Please try to log in to receive a new confirmation email.'), 401
         # TODO: what are they supposed to do then?
     user = User.query.filter_by(email=email).first_or_404()
     if user.confirmed:
