@@ -5,6 +5,7 @@ from app.geography import attending
 from app.util import succ, fail
 from app.notifier import notifier
 from app.facebook import facebook
+import datetime
 import os
 
 api = Blueprint('api', __name__)
@@ -29,7 +30,8 @@ def verify_token():
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
-        print('Request from ' + g.me.name)
+        g.me.last_seen = datetime.datetime.utcnow()
+        print('User: ' + g.me.name)
         g.json = request.get_json()
 
 

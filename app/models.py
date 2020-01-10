@@ -47,6 +47,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     registered_on = db.Column(db.DateTime, nullable=False)
+    last_seen = db.Column(db.DateTime, nullable=True)
 
     # User information
     name = db.Column(db.String(64), nullable=False)
@@ -97,7 +98,7 @@ class User(db.Model):
         self.school_id = school_id
         self.confirmed = confirmed
         self.year = year
-        self.registered_on = datetime.datetime.now()
+        self.registered_on = datetime.datetime.utcnow()
 
     def generate_token(self):
         """
