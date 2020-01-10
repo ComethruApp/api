@@ -56,7 +56,7 @@ def update_location():
 
     g.me.current_event_id = None
     for event in g.me.feed():
-        if attending(lat, lng, event.lat, event.lng):
+        if (event.lat is not None and event.lng is not None) and attending(lat, lng, event.lat, event.lng):
             g.me.current_event_id = event.id
             break
     db.session.commit()
