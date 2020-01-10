@@ -74,7 +74,7 @@ def get_user(user_id):
 
 @api.route('/users/me')
 def get_me():
-    return jsonify(g.me.json(g.me))
+    return jsonify(g.me.json(g.me, need_friendship=False))
 
 @api.route('/users/me', methods=['PUT'])
 def update_me():
@@ -193,7 +193,7 @@ def get_friends():
     Get friends of logged in user.
     """
     friends = g.me.friends()
-    return jsonify([user.json(g.me) for user in friends])
+    return jsonify([user.json(g.me, is_friend=True) for user in friends])
 
 @api.route('/friends/requests')
 def get_friend_requests():
@@ -201,7 +201,7 @@ def get_friend_requests():
     Get users who have sent friend requests to the current user.
     """
     friend_requests = g.me.friend_requests()
-    return jsonify([user.json(g.me) for user in friend_requests])
+    return jsonify([user.json(g.me, is_friend=False, has_received_friend_request=False, has_sent_friend_request=True) for user in friend_requests])
 
 @api.route('/friends/facebook', methods=['GET'])
 def get_facebook_friends():
