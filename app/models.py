@@ -224,9 +224,15 @@ class User(db.Model):
         return True
 
     def has_received_friend_request(self, user) -> bool:
+        """
+        Have I received a friend request from the given user?
+        """
         return self.friend_requests_received.filter(friend_requests.c.friender_id == user.id).count() > 0
 
     def has_sent_friend_request(self, user) -> bool:
+        """
+        Have I sent a friend request from the given user?
+        """
         return self.friend_requests_sent.filter(friend_requests.c.friended_id == user.id).count() > 0
 
     def has_friend_request(self, user) -> bool:
@@ -296,7 +302,7 @@ class User(db.Model):
         users = User.query.filter(User.facebook_id.in_(facebook_ids))
         return users.all()
 
-    def json(self, me, event=None):
+    def json(self, me, event=None, need_friendship=True, is_friend=None, has_sent_friend_request=None, has_received_friend_request=None):
         """
         Generate JSON representation of this user.
 
@@ -305,19 +311,37 @@ class User(db.Model):
         """
         raw = {key: getattr(self, key) for key in ('id', 'name', 'email', 'verified',
                                                    'facebook_id', 'facebook_name')}
+        is_me = (self == me)
         raw.update({
             # Is this user me?
-            'is_me': (self == me),
+            'is_me': is_me,
             # Did this user receive/send a friend request from/to this user?
-            'has_sent_friend_request': self.has_sent_friend_request(me),
-            'has_received_friend_request': self.has_received_friend_request(me),
-            # Is the current user friends with this user?
-            'is_friend': self.is_friends_with(me),
             'invited': event.is_invited(self) if event else None,
             'hosting': event.is_hosted_by(self) if event else None,
             'facebook_id': self.facebook_id,
             'facebook_name': self.facebook_name,
         })
+        if need_friendship:
+            if is_me:
+                is_friend = False
+                has_sent_friend_request = False
+                has_received_friend_request = False
+            else:
+                if is_friend is None:
+                    is_friend = self.is_friends_with(me)
+                if is_friend:
+                    has_sent_friend_request = False
+                    has_received_friend_request = False
+                if has_sent_friend_request is None:
+                    has_sent_friend_request = self.has_sent_friend_request(me)
+                if has_received_friend_request is None:
+                    has_received_friend_request = self.has_received_friend_request(me)
+            raw.update({
+                # Is the current user friends with this user?
+                'is_friend': is_friend,
+                'has_sent_friend_request': has_sent_friend_request,
+                'has_received_friend_request': has_received_friend_request,
+            })
         return raw
 
 
