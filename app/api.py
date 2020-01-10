@@ -29,6 +29,7 @@ def verify_token():
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
+        print('Request from ' + g.me.name)
         g.json = request.get_json()
 
 
