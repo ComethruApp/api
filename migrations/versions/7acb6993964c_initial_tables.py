@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: 7acb6993964c
-Revises: 
+Revises:
 Create Date: 2019-11-26 01:05:15.894828
 
 """
@@ -60,8 +60,6 @@ def upgrade():
     sa.Column('registered_on', sa.DateTime(), nullable=False),
     sa.Column('verified', sa.Boolean(), nullable=False),
     sa.Column('admin', sa.Boolean(), nullable=False),
-    sa.Column('lat', sa.Float(), nullable=True),
-    sa.Column('lng', sa.Float(), nullable=True),
     sa.Column('current_event_id', sa.Integer(), nullable=True),
     sa.Column('school_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['current_event_id'], ['events.id'], ),
