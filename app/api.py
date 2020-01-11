@@ -31,6 +31,7 @@ def verify_token():
         if g.me is None:
             abort(401)
         g.me.last_seen = datetime.datetime.utcnow()
+        db.session.commit()
         print('User: ' + g.me.name)
         g.json = request.get_json()
 
