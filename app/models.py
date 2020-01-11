@@ -513,7 +513,7 @@ class Event(db.Model):
             'people': self.people(),
             'review': review.json() if review else None,
             'rating': self.rating(),
-            'hosts': [host.json(me) for host in self.hosts],
+            'hosts': [host.json(me, need_friendship=False) for host in self.hosts],
             'tags': [tag.name for tag in self.tags],
         })
         return raw
