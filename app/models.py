@@ -415,7 +415,7 @@ class Event(db.Model):
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
         # TODO use set?
         for field in ('name', 'description', 'location', 'lat', 'lng', 'address', 'open',
-                      'capacity', 'transitive_invites'):
+                      'capacity', 'transitive_invites', 'venmo'):
             if field in raw:
                 setattr(self, field, raw[field])
 
@@ -503,8 +503,8 @@ class Event(db.Model):
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'address', 'lat', 'lng',
-                                                   'open',
-                                                   'transitive_invites', 'capacity')}
+                                                   'open', 'transitive_invites',
+                                                   'capacity', 'venmo')}
         review = self.get_review(me)
         raw.update({
             'time': self.time.isoformat(),
