@@ -388,6 +388,8 @@ class Event(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)
     ended = db.Column(db.Boolean, default=False)
 
+    venmo = db.Column(db.String(16), nullable=True)
+
     # Relationships
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
