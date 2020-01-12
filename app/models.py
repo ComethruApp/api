@@ -301,7 +301,7 @@ class User(db.Model):
         friends = facebook.get_friends(self.facebook_id)
         facebook_ids = [user['id'] for user in friends]
         # TODO: don't build this list with python! There must be a better way to do this with a query...
-        friend_ids = [user.id for user in self.friends.all()]
+        friend_ids = [user.id for user in self.friends()]
         users = User.query.filter(User.facebook_id.in_(facebook_ids) & -User.id.in_(friend_ids))
         return users.all()
 
