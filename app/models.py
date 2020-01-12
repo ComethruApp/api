@@ -391,6 +391,7 @@ class Event(db.Model):
     ended = db.Column(db.Boolean, default=False)
 
     venmo = db.Column(db.String(16), nullable=True)
+    alcohol = db.Column(db.Boolean, default=False)
 
     # Relationships
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
@@ -417,7 +418,7 @@ class Event(db.Model):
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
         # TODO use set?
         for field in ('name', 'description', 'location', 'lat', 'lng', 'address', 'open',
-                      'capacity', 'transitive_invites', 'venmo'):
+                      'capacity', 'transitive_invites', 'venmo', 'alcohol'):
             if field in raw:
                 setattr(self, field, raw[field])
 
@@ -506,7 +507,7 @@ class Event(db.Model):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
                                                    'location', 'address', 'lat', 'lng',
                                                    'open', 'transitive_invites',
-                                                   'capacity', 'venmo')}
+                                                   'capacity', 'venmo', 'alcohol')}
         review = self.get_review(me)
         raw.update({
             'time': self.time.isoformat(),
