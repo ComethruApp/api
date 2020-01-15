@@ -338,7 +338,7 @@ class User(db.Model):
                     has_received_friend_request = False
                 if has_sent_friend_request is None:
                     has_sent_friend_request = self.has_sent_friend_request(me)
-                if has_received_friend_request is None:
+                if not has_sent_friend_request and has_received_friend_request is None:
                     has_received_friend_request = self.has_received_friend_request(me)
             raw.update({
                 # Is the current user friends with this user?
