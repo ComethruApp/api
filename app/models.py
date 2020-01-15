@@ -5,6 +5,7 @@ import datetime
 import jwt
 import random
 
+UPCOMING_RANGE = datetime.timedelta(hours=10)
 EVENT_LENGTH = datetime.timedelta(hours=10)
 
 followers = db.Table('followers',
@@ -258,7 +259,7 @@ class User(db.Model):
         # Filter out events that are over
         now = datetime.datetime.utcnow()
         events = events.filter(
-            Event.time < now,
+            Event.time < now + UPCOMING_RANGE,
             Event.ended == False,
             ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time)) | \
                     ((Event.end_time != None) & (now < Event.end_time)),
