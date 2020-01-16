@@ -9,7 +9,7 @@ def email_to_name(email: str):
 
 @app.route('/stats')
 def stats():
-    for user in Users.query.all():
+    for user in User.query.all():
         if name == 'Name missing':
             user.name = email_to_name(user.email)
     db.session.commit()
