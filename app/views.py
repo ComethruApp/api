@@ -12,8 +12,10 @@ def email_to_name(email: str):
 
 @app.route('/stats')
 def stats():
+    """
     for user in User.query.all():
         if user.name == 'Name missing' or user.name == '':
             user.name = email_to_name(user.email)
     db.session.commit()
+    """
     return render_template('stats.html', users=User.query.count())
