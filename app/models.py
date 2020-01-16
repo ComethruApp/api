@@ -313,8 +313,9 @@ class User(db.Model):
         :param me: User currently logged in. Necessary to generate boolean fields describing relationships.
         :param event: optionally specify an event to check invitation status for.
         """
-        raw = {key: getattr(self, key) for key in ('id', 'name', 'email', 'verified',
+        raw = {key: getattr(self, key) for key in ('id', 'email', 'verified',
                                                    'facebook_id', 'facebook_name')}
+        raw['name'] = self.facebook_name if self.facebook_name else self.name
         is_me = (self == me)
         raw.update({
             # Is this user me?
