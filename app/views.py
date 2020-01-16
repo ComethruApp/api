@@ -5,7 +5,7 @@ from app.models import User
 def email_to_name(email: str):
     email = email.split('@')[0]
     chunks = [chunk[0].upper() + chunk[1:] for chunk in email.split('.') if email.isalpha()]
-    return name
+    return chunks.join(' ')
 
 @app.route('/stats')
 def stats():
