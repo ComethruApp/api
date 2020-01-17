@@ -66,6 +66,11 @@ def update_location():
     db.session.commit()
     return succ('Location received!')
 
+@api.route('/status')
+def about():
+    return jsonify({
+        'users': User.query.count(),
+    })
 
 #########
 # Users #
