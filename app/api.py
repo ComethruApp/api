@@ -70,6 +70,7 @@ def update_location():
 def about():
     return jsonify({
         'users': User.query.count(),
+        'events': Event.query.count(),
     })
 
 #########
