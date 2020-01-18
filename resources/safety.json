@@ -14,6 +14,18 @@
         "Special Service Van": "203-432-2788"
     },
     "3": {
-        "Police and Fire Emergency": "911"
+        "Immediate Fire/Police Emergency": "911",
+        "Campus Police/EMS": "617-253-1212 (on campus": "100)",
+        "MIT Medical": "617-253-4481",
+        "Mental Health Clinician-on-Call": "617-253-4481",
+        "Dean-on-Call, after 5 p.m.": "617-253-1212",
+        "Violence Prevention Hotline, 24 hr": "617-253-2300",
+        "Saferide, 6 p.m.-3 a.m.": "617-253-2997",
+        "Alcohol and Other Drugs Services": "617-258-6499",
+        "MIT Mental Health & Counseling": "617-253-2916",
+        "SPXCE (LGBTQ and Multicultural Programs)": "617-258-6732",
+        "Student Disability Services": "617-253-1674",
+        "Office of Minority Education": "617-253-5010",
+        "Title IX & Bias Response": "617-324-7526"
     }
 }
