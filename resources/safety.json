@@ -2,7 +2,10 @@
     "1": {
         "Police and Fire Emergency": "911",
         "University Police Dispatch (non-emergencies)": "203-432-4400",
-        "Sexual Harassment and Assault Response & Education (SHARE)": "203-432-2000",
+        "Sexual Harassment and Assault Response & Education (SHARE)": [
+            "https://sharecenter.yale.edu",
+            "203-432-2000"
+        ],
         "Victim Services": "203-432-9547",
         "New Haven PD Neighborhood Services": "203-946-6285",
         "Yale Security Central Alarm Station": "203-785-5555",
@@ -15,7 +18,7 @@
     },
     "3": {
         "Immediate Fire/Police Emergency": "911",
-        "Campus Police/EMS": "617-253-1212 (on campus": "100)",
+        "Campus Police/EMS": "617-253-1212",
         "MIT Medical": "617-253-4481",
         "Mental Health Clinician-on-Call": "617-253-4481",
         "Dean-on-Call, after 5 p.m.": "617-253-1212",
