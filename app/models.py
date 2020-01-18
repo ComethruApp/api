@@ -515,7 +515,7 @@ class Event(db.Model):
             'time': self.time.isoformat(),
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'happening_now': self.happening_now(),
-            'mine': self.admin or self.is_hosted_by(me),
+            'mine': me.admin or self.is_hosted_by(me),
             'invited_me': self.is_invited(me),
             'people': self.people(),
             'review': review.json() if review else None,
