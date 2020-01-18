@@ -7,6 +7,7 @@ from app.notifier import notifier
 from app.facebook import facebook
 import datetime
 import os
+import json
 
 api = Blueprint('api', __name__)
 
@@ -72,6 +73,12 @@ def about():
         'users': User.query.count(),
         'events': Event.query.count(),
     })
+
+@api.route('/safety')
+def safety():
+    with open('resources/safety.json', 'r') as f:
+        numbers = json.load(f).get(g.me.school_id)
+    return jsonify(numbers)
 
 #########
 # Users #
