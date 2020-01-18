@@ -354,6 +354,8 @@ def get_friends_at_event(event_id):
 @api.route('/events/<event_id>/reviews', methods=['GET'])
 def get_reviews(event_id):
     event = Event.query.get_or_404(event_id)
+    if not (g.me.admin or event.is_hosted_by(g.me)):
+        abort(403)
     return jsonify([review.json() for review in event.reviews])
 
 @api.route('/events/<event_id>/reviews', methods=['POST'])
