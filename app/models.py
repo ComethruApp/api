@@ -203,7 +203,7 @@ class User(db.Model):
         """
         Get a list of people you have friended and who have friended you whose friendships are confirmed.
         """
-        return self.friended.all() + self.frienders.all()
+        return self.friended.union(self.frienders).all()
 
     def is_friends_with(self, user) -> bool:
         return self.friended.filter(friendships.c.friended_id == user.id).count() > 0 \
