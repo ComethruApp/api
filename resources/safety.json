@@ -1,34 +1,31 @@
 {
-    "1": {
-        "Police and Fire Emergency": "911",
-        "University Police Dispatch (non-emergencies)": "203-432-4400",
-        "Sexual Harassment and Assault Response & Education (SHARE)": [
-            "https://sharecenter.yale.edu",
-            "203-432-2000"
-        ],
-        "Victim Services": "203-432-9547",
-        "New Haven PD Neighborhood Services": "203-946-6285",
-        "Yale Security Central Alarm Station": "203-785-5555",
-        "2-WALK": "203-432-9255",
-        "Nighttime safe rides": "203-432-6330",
-        "Access Control Systems": "203-432-6736",
-        "Yale Shuttle Bus (Nighttime)": "203-432-6330",
-        "Yale Shuttle Bus (Daytime)": "203-432-9790",
-        "Special Service Van": "203-432-2788"
-    },
-    "3": {
-        "Immediate Fire/Police Emergency": "911",
-        "Campus Police/EMS": "617-253-1212",
-        "MIT Medical": "617-253-4481",
-        "Mental Health Clinician-on-Call": "617-253-4481",
-        "Dean-on-Call, after 5 p.m.": "617-253-1212",
-        "Violence Prevention Hotline, 24 hr": "617-253-2300",
-        "Saferide, 6 p.m.-3 a.m.": "617-253-2997",
-        "Alcohol and Other Drugs Services": "617-258-6499",
-        "MIT Mental Health & Counseling": "617-253-2916",
-        "SPXCE (LGBTQ and Multicultural Programs)": "617-258-6732",
-        "Student Disability Services": "617-253-1674",
-        "Office of Minority Education": "617-253-5010",
-        "Title IX & Bias Response": "617-324-7526"
-    }
+    "1": [
+        {"number": "911", "name": "Police and Fire Emergency"},
+        {"number": "203-432-4400", "name": "University Police Dispatch (non-emergencies)"},
+        {"website": "https://sharecenter.yale.edu", "number": "203-432-2000", "name": "Sexual Harassment and Assault Response & Education (SHARE)"},
+        {"number": "203-432-9547", "name": "Victim Services"},
+        {"number": "203-946-6285", "name": "New Haven PD Neighborhood Services"},
+        {"number": "203-785-5555", "name": "Yale Security Central Alarm Station"},
+        {"number": "203-432-9255", "name": "2-WALK"},
+        {"number": "203-432-6330", "name": "Nighttime safe rides"},
+        {"number": "203-432-6736", "name": "Access Control Systems"},
+        {"number": "203-432-6330", "name": "Yale Shuttle Bus (Nighttime)"},
+        {"number": "203-432-9790", "name": "Yale Shuttle Bus (Daytime)"},
+        {"number": "203-432-2788", "name": "Special Service Van"}
+    ],
+    "3": [
+        {"number": "911", "name": "Immediate Fire/Police Emergency"},
+        {"number": "617-253-1212", "name": "Campus Police/EMS"},
+        {"number": "617-253-4481", "name": "MIT Medical"},
+        {"number": "617-253-4481", "name": "Mental Health Clinician-on-Call"},
+        {"number": "617-253-1212", "name": "Dean-on-Call, after 5 p.m."},
+        {"number": "617-253-2300", "name": "Violence Prevention Hotline, 24 hr"},
+        {"number": "617-253-2997", "name": "Saferide, 6 p.m.-3 a.m."},
+        {"number": "617-258-6499", "name": "Alcohol and Other Drugs Services"},
+        {"number": "617-253-2916", "name": "MIT Mental Health & Counseling"},
+        {"number": "617-258-6732", "name": "SPXCE (LGBTQ and Multicultural Programs)"},
+        {"number": "617-253-1674", "name": "Student Disability Services"},
+        {"number": "617-253-5010", "name": "Office of Minority Education"},
+        {"number": "617-324-7526", "name": "Title IX & Bias Response"}
+    ]
 }
