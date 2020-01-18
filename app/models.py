@@ -265,7 +265,7 @@ class User(db.Model):
                     ((Event.end_time != None) & (now < Event.end_time)),
         )
         # Put private events first
-        events = events.order_by(Event.open)
+        events = events.order_by(Event.time, Event.open)
         return events.all()
 
     def review_on(self, event, positive, negative, body):
