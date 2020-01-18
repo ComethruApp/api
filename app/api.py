@@ -248,7 +248,7 @@ def create_event():
 @api.route('/events/<event_id>', methods=['PUT'])
 def update_event(event_id):
     event = Event.query.get_or_404(event_id)
-    if not event.is_hosted_by(g.me):
+    if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     event.update(g.json)
     db.session.commit()
@@ -257,7 +257,7 @@ def update_event(event_id):
 @api.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
-    if not event.is_hosted_by(g.me):
+    if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     # FIXME: this fails because we haven't gotten rid of the hostships
     db.session.delete(event)
@@ -267,7 +267,7 @@ def delete_event(event_id):
 @api.route('/events/<event_id>/end', methods=['POST'])
 def end_event(event_id):
     event = Event.query.get_or_404(event_id)
-    if not event.is_hosted_by(g.me):
+    if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     event.ended = True
     db.session.commit()
@@ -277,7 +277,7 @@ def end_event(event_id):
 def add_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
     tag_name = tag_name.lower()
-    if not event.is_hosted_by(g.me):
+    if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     # First, check if the event already has this tag.
     if event.has_tag(tag_name):
@@ -291,7 +291,7 @@ def add_tag(event_id, tag_name):
 @api.route('/events/<event_id>/tags/<tag_name>', methods=['DELETE'])
 def remove_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
-    if not event.is_hosted_by(g.me):
+    if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     if not event.has_tag(tag_name):
         return fail('Event does not have this tag.')
@@ -417,7 +417,7 @@ def get_event_hosts(event_id):
 def add_host(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
-    if event.is_hosted_by(g.me):
+    if g.me.admin or event.is_hosted_by(g.me):
         if event.add_host(user):
             db.session.commit()
             return succ('Added host.')
@@ -430,7 +430,7 @@ def add_host(event_id, user_id):
 def delete_host(event_id, user_id):
     event = Event.query.get_or_404(event_id)
     user = User.query.get_or_404(user_id)
-    if event.is_hosted_by(g.me) and user != g.me:
+    if (g.me.admin or event.is_hosted_by(g.me)) and user != g.me:
         # TODO: Add remove_host function on event
         event.hosts.remove(user)
         db.session.commit()
