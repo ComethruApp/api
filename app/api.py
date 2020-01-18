@@ -77,7 +77,7 @@ def about():
 @api.route('/safety')
 def safety():
     with open('resources/safety.json', 'r') as f:
-        numbers = json.load(f).get(g.me.school_id, {'Police or Fire Emergency': '911'})
+        numbers = json.load(f).get(str(g.me.school_id), {'Police or Fire Emergency': '911'})
     return jsonify(numbers)
 
 #########
