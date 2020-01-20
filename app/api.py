@@ -8,9 +8,11 @@ from app.facebook import facebook
 import datetime
 import os
 import json
+from profanityfilter import ProfanityFilter
 
 api = Blueprint('api', __name__)
 
+pf = ProfanityFilter()
 
 @api.errorhandler(404)
 def not_found_error(error):
@@ -242,6 +244,7 @@ def get_events():
 @api.route('/events/<event_id>')
 def get_event(event_id):
     event = Event.query.get_or_404(event_id)
+    event.description = pf.censor(event.description)
     return jsonify(event.json(g.me))
 
 @api.route('/events', methods=['POST'])
