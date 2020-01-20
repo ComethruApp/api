@@ -7,6 +7,7 @@ import random
 
 UPCOMING_RANGE = datetime.timedelta(days=5)
 EVENT_LENGTH = datetime.timedelta(hours=10)
+AFTER_END_VISIBILITY = datetime.timedelta(hours=20)
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
@@ -158,8 +159,8 @@ class User(db.Model):
             events = events.filter(
                 #Event.time < now,
                 Event.ended == False,
-                ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time)) | \
-                        ((Event.end_time != None) & (now < Event.end_time)),
+                ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time + AFTER_END_VISIBILITY)) | \
+                        ((Event.end_time != None) & (now < Event.end_time + AFTER_END_VISIBILITY)),
             )
         return events.all()
 
