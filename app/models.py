@@ -5,7 +5,7 @@ import datetime
 import jwt
 import random
 
-UPCOMING_RANGE = datetime.timedelta(days=4)
+UPCOMING_RANGE = datetime.timedelta(days=5)
 EVENT_LENGTH = datetime.timedelta(hours=10)
 
 followers = db.Table('followers',
