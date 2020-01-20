@@ -166,7 +166,8 @@ class User(db.Model):
     def search(self, query: str):
         users = User.query.filter(User.school_id == self.school_id,
                                   User.id != self.id,
-                                  User.name.ilike('%' + query + '%'))
+                                  User.name.ilike('%' + query + '%'),
+                                  User.confirmed == True)
         return users.limit(10).all()
 
     def follow(self, user):
