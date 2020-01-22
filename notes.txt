@@ -1,2 +1,0 @@
-Invitations/invites naming:
-- invites refers to the specific invites associated with events. "invitations" is the name of the table of associations.
