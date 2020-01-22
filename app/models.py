@@ -15,7 +15,7 @@ followers = db.Table('followers',
 )
 
 hostships = db.Table('hostships',
-    db.Column('user_id',  db.Integer, db.ForeignKey('users.id'),  nullable=False),
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
     db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
 )
 
@@ -72,25 +72,25 @@ class User(db.Model):
     # Relationships
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     followed = db.relationship(
-            'User', secondary=followers,
-            primaryjoin=(followers.c.follower_id == id),
-            secondaryjoin=(followers.c.followed_id == id),
-            backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     friended = db.relationship(
-            'User', secondary=friendships,
-            primaryjoin=(friendships.c.friender_id == id),
-            secondaryjoin=(friendships.c.friended_id == id),
-            backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
+        'User', secondary=friendships,
+        primaryjoin=(friendships.c.friender_id == id),
+        secondaryjoin=(friendships.c.friended_id == id),
+        backref=db.backref('frienders', lazy='dynamic'), lazy='dynamic')
     friend_requests_sent = db.relationship(
-            'User', secondary=friend_requests,
-            primaryjoin=(friend_requests.c.friender_id == id),
-            secondaryjoin=(friend_requests.c.friended_id == id),
-            backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
+        'User', secondary=friend_requests,
+        primaryjoin=(friend_requests.c.friender_id == id),
+        secondaryjoin=(friend_requests.c.friended_id == id),
+        backref=db.backref('friend_requests_received', lazy='dynamic'), lazy='dynamic')
     blocked = db.relationship(
-            'User', secondary=blocks,
-            primaryjoin=(blocks.c.blocker_id == id),
-            secondaryjoin=(blocks.c.blocked_id == id),
-            backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
+        'User', secondary=blocks,
+        primaryjoin=(blocks.c.blocker_id == id),
+        secondaryjoin=(blocks.c.blocked_id == id),
+        backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
     updates = db.relationship('Update', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)
 
@@ -160,8 +160,7 @@ class User(db.Model):
             events = events.filter(
                 #Event.time < now,
                 Event.ended == False,
-                ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time + AFTER_END_VISIBILITY)) | \
-                        ((Event.end_time != None) & (now < Event.end_time + AFTER_END_VISIBILITY)),
+                ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time + AFTER_END_VISIBILITY)) | ((Event.end_time != None) & (now < Event.end_time + AFTER_END_VISIBILITY)),
             )
         return events.all()
 
@@ -264,8 +263,7 @@ class User(db.Model):
         events = events.filter(
             Event.time < now + UPCOMING_RANGE,
             Event.ended == False,
-            ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time)) | \
-                    ((Event.end_time != None) & (now < Event.end_time)),
+            ((Event.end_time == None) & (now - EVENT_LENGTH < Event.time)) | ((Event.end_time != None) & (now < Event.end_time)),
         )
         # Put private events first
         events = events.order_by(Event.time, Event.open)
@@ -402,12 +400,10 @@ class Event(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
     hosts = db.relationship(
         'User', secondary=hostships,
-        backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic'
-    )
+        backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic')
     invites = db.relationship(
         'User', secondary=invitations,
-        backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic'
-    )
+        backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
     updates = db.relationship('Update', backref='event', lazy=True)
     reviews = db.relationship('Review', backref='event', lazy=True)
 
@@ -506,7 +502,6 @@ class Event(db.Model):
         dislikes_count = reviews.filter(Review.negative == True).count()
 
         return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / reviews_count)
-
 
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',

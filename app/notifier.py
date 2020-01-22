@@ -45,4 +45,5 @@ class Notifier:
                           content=user_from.name + ' has invited you to ' + event.name + '! Come thru!',
                           data={'task': ('event', event.id)})
 
+
 notifier = Notifier()
