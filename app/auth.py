@@ -60,7 +60,7 @@ def send_confirmation_email(user):
 def register():
     # get the post data
     payload = request.get_json()
-    email = payload.get('email').lower()
+    email = payload.get('email').lower().strip()
     # check if user already exists
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -76,7 +76,7 @@ def register():
                 return fail('You must use a valid @yale.edu email address.', 401)
 
             user = User(
-                name=payload['name'],
+                name=payload['name'].strip(),
                 email=email,
                 year=payload['year'],
                 password=payload['password'],
