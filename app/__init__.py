@@ -32,6 +32,6 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
     app.logger.info('App startup')
 
-from app import routes, models, api, auth, views
+from app import models, api, auth, views
 app.register_blueprint(api.api, url_prefix='/api')
 app.register_blueprint(auth.auth, url_prefix='/auth')
