@@ -18,13 +18,16 @@ pf = ProfanityFilter()
 def not_found_error(error):
     return fail('Not found.', 404)
 
+
 @api.errorhandler(401)
 def unauthorized(error):
     return fail('You\'re not authorized to perform this action.', 401)
 
+
 @api.errorhandler(403)
 def forbidden(error):
     return fail('You don\'t have permission to do this.', 403)
+
 
 @api.before_request
 def verify_token():
@@ -50,6 +53,7 @@ def heartbeat():
         'min_version': 0,
     })
 
+
 @api.route('/location', methods=['POST'])
 def update_location():
     lat = g.json['lat']
@@ -69,6 +73,7 @@ def update_location():
     db.session.commit()
     return succ('Location received!')
 
+
 @api.route('/status')
 def about():
     return jsonify({
@@ -76,11 +81,13 @@ def about():
         'events': Event.query.count(),
     })
 
+
 @api.route('/safety')
 def safety():
     with open('resources/safety.json', 'r') as f:
         numbers = json.load(f).get(str(g.me.school_id), {'Police or Fire Emergency': '911'})
     return jsonify(numbers)
+
 
 #########
 # Users #
@@ -91,9 +98,11 @@ def get_user(user_id):
     user = User.query.get_or_404(user_id)
     return jsonify(user.json(g.me))
 
+
 @api.route('/users/me')
 def get_me():
     return jsonify(g.me.json(g.me, need_friendship=False))
+
 
 @api.route('/users/me', methods=['PUT'])
 def update_me():
@@ -101,6 +110,7 @@ def update_me():
     g.me.name = g.json['name']
     db.session.commit()
     return succ('Updated profile.')
+
 
 @api.route('/users/me/password', methods=['PUT'])
 def update_password():
@@ -114,10 +124,12 @@ def update_password():
         return succ('Successfully updated password!')
     return fail('Incorrect password.', 403)
 
+
 @api.route('/users/search/<query>')
 def search_users(query):
     users = g.me.search(query)
     return jsonify([user.json(g.me) for user in users])
+
 
 # Blocks
 @api.route('/users/<user_id>/block', methods=['POST'])
@@ -129,6 +141,7 @@ def block_user(user_id):
     else:
         return fail('You\'ve already blocked this person.')
 
+
 @api.route('/users/<user_id>/block', methods=['DELETE'])
 def unblock_user(user_id):
     user = User.query.get(user_id)
@@ -138,6 +151,7 @@ def unblock_user(user_id):
     else:
         return fail('You haven\'t blocked this person.')
 
+
 # Facebook
 @api.route('/users/me/facebook', methods=['POST'])
 def facebook_connect():
@@ -145,11 +159,13 @@ def facebook_connect():
     db.session.commit()
     return succ('Successfully connected!')
 
+
 @api.route('/users/me/facebook', methods=['DELETE'])
 def facebook_disconnect():
     g.me.facebook_disconnect()
     db.session.commit()
     return succ('Successfully disconnected!')
+
 
 # Friendships
 @api.route('/friends/<user_id>/request', methods=['POST'])
@@ -162,6 +178,7 @@ def create_friend_request(user_id):
     else:
         return fail('You\'re already friends with this person.')
 
+
 @api.route('/friends/<user_id>/cancel', methods=['POST'])
 def cancel_friend_request(user_id):
     friend_request_sent = g.me.friend_requests_sent.filter(friend_requests.c.friended_id == user_id).first_or_404()
@@ -169,6 +186,7 @@ def cancel_friend_request(user_id):
         g.me.friend_requests_sent.remove(friend_request_sent)
     db.session.commit()
     return succ('Succesfully cancelled friend request.')
+
 
 @api.route('/friends/<friender_id>/accept', methods=['POST'])
 def accept_friend_request(friender_id):
@@ -180,6 +198,7 @@ def accept_friend_request(friender_id):
     notifier.accept_friend_request(g.me, friend)
     return succ('Accepted the request!')
 
+
 @api.route('/friends/<user_id>/reject', methods=['POST'])
 def reject_friend_request(user_id):
     """
@@ -189,6 +208,7 @@ def reject_friend_request(user_id):
     g.me.friend_requests_received.remove(req)
     db.session.commit()
     return succ('Successfully rejected request.')
+
 
 @api.route('/friends/<user_id>/remove', methods=['POST'])
 def friend_remove(user_id):
@@ -206,6 +226,7 @@ def friend_remove(user_id):
     db.session.commit()
     return succ('Succesfully removed friend.')
 
+
 @api.route('/friends')
 def get_friends():
     """
@@ -214,6 +235,7 @@ def get_friends():
     friends = g.me.friends()
     return jsonify([user.json(g.me, is_friend=True) for user in friends])
 
+
 @api.route('/friends/requests')
 def get_friend_requests():
     """
@@ -221,6 +243,7 @@ def get_friend_requests():
     """
     friend_requests = g.me.friend_requests()
     return jsonify([user.json(g.me, is_friend=False, has_received_friend_request=False, has_sent_friend_request=True) for user in friend_requests])
+
 
 @api.route('/friends/facebook', methods=['GET'])
 def get_facebook_friends():
@@ -232,6 +255,7 @@ def get_facebook_friends():
     users = g.me.facebook_friends()
     return jsonify([user.json(g.me, is_friend=False) for user in users])
 
+
 ##########
 # Events #
 ##########
@@ -241,11 +265,13 @@ def get_events():
     events = g.me.feed()
     return jsonify([event.json(g.me) for event in events])
 
+
 @api.route('/events/<event_id>')
 def get_event(event_id):
     event = Event.query.get_or_404(event_id)
     event.description = pf.censor(event.description)
     return jsonify(event.json(g.me))
+
 
 @api.route('/events', methods=['POST'])
 def create_event():
@@ -255,6 +281,7 @@ def create_event():
     db.session.commit()
     return jsonify(event.json(g.me))
 
+
 @api.route('/events/<event_id>', methods=['PUT'])
 def update_event(event_id):
     event = Event.query.get_or_404(event_id)
@@ -263,6 +290,7 @@ def update_event(event_id):
     event.update(g.json)
     db.session.commit()
     return jsonify(event.json(g.me)), 202
+
 
 @api.route('/events/<event_id>', methods=['DELETE'])
 def delete_event(event_id):
@@ -283,6 +311,7 @@ def end_event(event_id):
     db.session.commit()
     return succ('Event ended successfully.')
 
+
 @api.route('/events/<event_id>/tags/<tag_name>', methods=['POST'])
 def add_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
@@ -298,6 +327,7 @@ def add_tag(event_id, tag_name):
     # If the tag is blacklisted or there was another problem
     return fail('Tag not added.')
 
+
 @api.route('/events/<event_id>/tags/<tag_name>', methods=['DELETE'])
 def remove_tag(event_id, tag_name):
     event = Event.query.get_or_404(event_id)
@@ -311,16 +341,19 @@ def remove_tag(event_id, tag_name):
     # Should not be reached, but just in case.
     return fail('Tag not removed.')
 
+
 @api.route('/tags/search/<query>')
 def search_tags(query):
     query = query.lower()
     tags = Tag.query.filter(User.name.ilike('%' + query + '%'))
     return jsonify([tag.name for tag in tags])
 
+
 @api.route('/events/facebook')
 def facebook_events():
     events = facebook.get_events(g.me.facebook_id)
     return jsonify([event for event in events])
+
 
 @api.route('/users/me/events/current')
 def get_my_current_event():
@@ -330,6 +363,7 @@ def get_my_current_event():
     if event is None:
         return jsonify([])
     return jsonify([event.json(g.me)])
+
 
 @api.route('/users/<user_id>/events/current')
 def get_user_current_event(user_id):
@@ -344,10 +378,12 @@ def get_user_current_event(user_id):
         return jsonify([])
     return jsonify([event.json(g.me)])
 
+
 @api.route('/users/me/events')
 def get_my_events():
     events = g.me.events_hosted(include_past=True)
     return jsonify([event.json(g.me) for event in events])
+
 
 @api.route('/users/<user_id>/events')
 def get_user_events(user_id):
@@ -355,10 +391,12 @@ def get_user_events(user_id):
     events = user.events_hosted(include_past=(g.me == user))
     return jsonify([event.json(g.me) for event in events])
 
+
 @api.route('/events/<event_id>/friends')
 def get_friends_at_event(event_id):
     users = g.me.friends_at_event(event_id)
     return jsonify([user.json(g.me) for user in users])
+
 
 # Reviews
 @api.route('/events/<event_id>/reviews', methods=['GET'])
@@ -367,6 +405,7 @@ def get_reviews(event_id):
     if not (g.me.admin or event.is_hosted_by(g.me)):
         abort(403)
     return jsonify([review.json() for review in event.reviews])
+
 
 @api.route('/events/<event_id>/reviews', methods=['POST'])
 def create_review(event_id):
@@ -378,6 +417,7 @@ def create_review(event_id):
     db.session.commit()
     return succ('Reviewed successfully.')
 
+
 @api.route('/events/<event_id>/reviews', methods=['DELETE'])
 def delete_review(event_id):
     # TODO: check that I have access to this event
@@ -386,11 +426,13 @@ def delete_review(event_id):
     db.session.commit()
     return succ('Successfully unreviewd.')
 
+
 # Invites
 @api.route('/events/<event_id>/invites')
 def get_event_invites(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify([user.json(g.me, event) for user in event.invites])
+
 
 @api.route('/events/<event_id>/invites/<user_id>', methods=['POST'])
 def send_invite(event_id, user_id):
@@ -407,6 +449,7 @@ def send_invite(event_id, user_id):
     else:
         abort(403)
 
+
 @api.route('/events/<event_id>/invites/<user_id>', methods=['DELETE'])
 def delete_invite(event_id, user_id):
     event = Event.query.get_or_404(event_id)
@@ -419,11 +462,13 @@ def delete_invite(event_id, user_id):
     else:
         abort(403)
 
+
 # Hosts
 @api.route('/events/<event_id>/hosts')
 def get_event_hosts(event_id):
     event = Event.query.get_or_404(event_id)
     return jsonify([user.json(g.me, event) for user in event.hosts])
+
 
 @api.route('/events/<event_id>/hosts/<user_id>', methods=['POST'])
 def add_host(event_id, user_id):
@@ -438,6 +483,7 @@ def add_host(event_id, user_id):
     else:
         abort(403)
 
+
 @api.route('/events/<event_id>/hosts/<user_id>', methods=['DELETE'])
 def delete_host(event_id, user_id):
     event = Event.query.get_or_404(event_id)
@@ -450,6 +496,7 @@ def delete_host(event_id, user_id):
     else:
         abort(403)
 
+
 @api.route('/events/<event_id>/invites/search/<query>')
 def search_users_for_event(event_id, query):
     """
@@ -460,6 +507,7 @@ def search_users_for_event(event_id, query):
     event = Event.query.get(event_id)
     return jsonify([user.json(g.me, event) for user in users])
 
+
 # Updates
 @api.route('/events/<event_id>/updates')
 def get_event_updates(event_id):
@@ -467,12 +515,14 @@ def get_event_updates(event_id):
     # TODO: Check that we have access
     return jsonify([update.json(g.me) for update in event.updates])
 
+
 @api.route('/events/<event_id>/updates/<update_id>')
 def get_event_update(event_id, update_id):
     #event = Event.query.get_or_404(event_id)
     update = Update.query.get_or_404(update_id)
     # TODO: Check that we have access
     return jsonify(update.json(g.me))
+
 
 @api.route('/events/<event_id>/updates', methods=['POST'])
 def create_event_update(event_id):
@@ -485,6 +535,7 @@ def create_event_update(event_id):
     else:
         abort(403)
 
+
 @api.route('/events/<event_id>/updates/<update_id>', methods=['PUT'])
 def update_event_update(event_id, update_id):
     event = Event.query.get_or_404(event_id)
@@ -493,6 +544,7 @@ def update_event_update(event_id, update_id):
         update.body = g.json['body']
         return jsonify(update.json(g.me))
     return fail('Could not edit update.')
+
 
 @api.route('/events/<event_id>/delete/<update_id>', methods=['DELETE'])
 def delete_update(event_id, update_id):
