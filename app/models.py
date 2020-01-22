@@ -44,6 +44,7 @@ blocks = db.Table('blocks',
     db.Column('blocked_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
+
 class User(db.Model):
     __tablename__ = 'users'
 

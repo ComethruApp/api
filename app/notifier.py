@@ -1,6 +1,6 @@
 import requests
 from app import app
-#from app.models import User
+
 
 class Notifier:
     def _send(self, to, heading: str = None, content: str = None, data: dict = None):

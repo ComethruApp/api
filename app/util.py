@@ -1,5 +1,6 @@
 from flask import jsonify
 
+
 def succ(message, code=200):
     return (
         jsonify({
@@ -8,6 +9,7 @@ def succ(message, code=200):
         }),
         code
     )
+
 
 def fail(message, code=400):
     return (

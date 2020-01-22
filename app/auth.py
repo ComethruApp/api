@@ -11,6 +11,7 @@ from app.mailgun import send_email
 
 auth = Blueprint('auth', __name__)
 
+
 @auth.route('/confirm/<token>')
 def confirm_email(token):
     email = confirm_token(token)
@@ -44,6 +45,7 @@ def confirm_token(token):
     except:
         return False
 
+
 def send_confirmation_email(user):
     # Build and send confirmation email
     confirmation_token = generate_confirmation_token(user.email)
@@ -51,6 +53,7 @@ def send_confirmation_email(user):
     subject = '🌙 Verify your email for Comethru!'
     html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
     send_email(user.email, subject, html)
+
 
 @auth.route('/register', methods=['POST'])
 def register():
@@ -92,7 +95,6 @@ def register():
             return fail('Some error occurred. Please try again. Contact the developers if this continues to happen.', 500)
     else:
         return fail('User already exists. Please log in.', 202)
-
 
 
 @auth.route('/login', methods=['POST'])
