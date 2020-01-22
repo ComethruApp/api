@@ -1,6 +1,12 @@
-from flask import render_template
+from flask import render_template, redirect
 from app import app, db
 from app.models import User
+
+
+@app.route('/')
+def index():
+    # TODO: proper domain redirect
+    return redirect('https://comethru.io')
 
 
 @app.route('/stats')
