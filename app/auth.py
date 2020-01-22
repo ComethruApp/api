@@ -2,6 +2,7 @@ from flask import Blueprint, request, make_response, jsonify, url_for, render_te
 from flask.views import MethodView
 # For confirmation
 from itsdangerous import URLSafeTimedSerializer
+from itsdangerous.exc import SignatureExpired
 
 from app import app, db, bcrypt
 from app.models import User, School, BlacklistedToken
@@ -42,7 +43,7 @@ def confirm_token(token):
             max_age=app.config['CONFIRMATION_TOKEN_EXPIRATION'],
         )
         return email
-    except:
+    except SignatureExpired:
         return False
 
 

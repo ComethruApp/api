@@ -14,6 +14,7 @@ api = Blueprint('api', __name__)
 
 pf = ProfanityFilter()
 
+
 @api.errorhandler(404)
 def not_found_error(error):
     return fail('Not found.', 404)
@@ -301,6 +302,7 @@ def delete_event(event_id):
     db.session.delete(event)
     db.session.commit()
     return succ('Event deleted successfully.')
+
 
 @api.route('/events/<event_id>/end', methods=['POST'])
 def end_event(event_id):
