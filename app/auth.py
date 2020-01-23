@@ -136,7 +136,7 @@ def login():
 def send_reset_password_email(user):
     # Build and send confirmation email
     token = generate_confirmation_token(user.email)
-    url = url_for('auth.password_reset', token=token, _external=True)
+    url = url_for('auth.reset_password', token=token, _external=True)
     subject = '🌙 Reset your password on Comethru!'
     html = render_template('reset_password_email.html', name=user.name.split()[0], url=url)
     send_email(user.email, subject, html)
