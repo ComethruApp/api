@@ -172,7 +172,6 @@ def reset_password(token):
         user.set_password(data['password'])
         db.session.commit()
         return render_template('reset_password.html', message='Password reset successfully! You can now use it to log in on the Comethru mobile app.')
-    user = User.query.filter_by(email=email).first_or_404()
 
 
 def send_confirmation_email(user):
