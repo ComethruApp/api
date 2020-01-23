@@ -133,6 +133,57 @@ def login():
         return fail('There was an unexpected error. Please try again! :)', 500)
 
 
+def send_reset_password_email(user):
+    # Build and send confirmation email
+    token = generate_confirmation_token(user.email)
+    url = url_for('auth.password_reset', token=token, _external=True)
+    subject = '🌙 Reset your password on Comethru!'
+    html = render_template('reset_password_email.html', name=user.name.split()[0], url=url)
+    send_email(user.email, subject, html)
+
+
+@auth.route('/reset_password_request', methods=['POST'])
+def reset_password_request(token):
+    # get the post data
+    payload = request.get_json()
+    email = payload.get('email').lower().strip()
+    # check if user already exists
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        send_reset_password_email(user)
+
+    return succ('If this email has an associated account, a message has been sent to reset your password!', 201)
+
+
+@auth.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = confirm_token(token)
+    # If link is expired, False will be returned.
+    if not email:
+        return render_template('reset_password.html', message='Invalid or expired link.'), 401
+    if request.method == 'GET':
+        return render_template('reset_password.html'), 401
+    elif request.method == 'POST':
+        user = User.query.filter_by(email=email).first()
+        data = request.get_json()
+        if not data['password']:
+            return render_template('reset_password.html', message='Invalid password.'), 400
+        user.set_password(data['password'])
+        db.session.commit()
+        return render_template('reset_password.html', message='Password reset successfully! You can now use it to log in on the Comethru mobile app.')
+    user = User.query.filter_by(email=email).first_or_404()
+
+
+def send_confirmation_email(user):
+    # Build and send confirmation email
+    confirmation_token = generate_confirmation_token(user.email)
+    confirm_url = url_for('auth.reset_password', token=confirmation_token, _external=True)
+    subject = '🌙 Reset your password for Comethru'
+    html = render_template('reset_password_email.html', name=user.name.split()[0], confirm_url=confirm_url)
+    send_email(user.email, subject, html)
+
+
 @auth.route('/logout', methods=['POST'])
 def logout():
     pass
