@@ -143,7 +143,7 @@ def send_reset_password_email(user):
 
 
 @auth.route('/reset_password_request', methods=['POST'])
-def reset_password_request(token):
+def reset_password_request():
     # get the post data
     payload = request.get_json()
     email = payload.get('email').lower().strip()
