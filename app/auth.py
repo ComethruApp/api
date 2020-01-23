@@ -163,13 +163,12 @@ def reset_password(token):
     if not email:
         return render_template('reset_password.html', message='Invalid or expired link.'), 401
     if request.method == 'GET':
-        return render_template('reset_password.html'), 401
+        return render_template('reset_password.html')
     elif request.method == 'POST':
         user = User.query.filter_by(email=email).first()
-        data = request.get_json()
-        if not data['password']:
+        if not request.form['password']:
             return render_template('reset_password.html', message='Invalid password.'), 400
-        user.set_password(data['password'])
+        user.set_password(request.form['password'])
         db.session.commit()
         return render_template('reset_password.html', message='Password reset successfully! You can now use it to log in on the Comethru mobile app.')
 
