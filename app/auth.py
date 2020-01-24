@@ -173,15 +173,6 @@ def reset_password(token):
         return render_template('reset_password.html', message='Password reset successfully! You can now use it to log in on the Comethru mobile app.')
 
 
-def send_confirmation_email(user):
-    # Build and send confirmation email
-    confirmation_token = generate_confirmation_token(user.email)
-    confirm_url = url_for('auth.reset_password', token=confirmation_token, _external=True)
-    subject = '🌙 Reset your password for Comethru'
-    html = render_template('reset_password_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-    send_email(user.email, subject, html)
-
-
 @auth.route('/logout', methods=['POST'])
 def logout():
     pass
