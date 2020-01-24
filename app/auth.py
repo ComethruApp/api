@@ -91,8 +91,6 @@ def register():
 
             return succ('Check your inbox at ' + email + ' to confirm! (The email may take a few moments to deliver.)', 201)
         except Exception as e:
-            # TODO: eventually we should just return the error to the client
-            raise e
             return fail('Some error occurred. Please try again. Contact the developers if this continues to happen.', 500)
     else:
         return fail('User already exists. Please log in.', 202)
