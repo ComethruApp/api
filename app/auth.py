@@ -73,7 +73,7 @@ def register():
             school = School.from_email(email)
             if school is None:
                 # TODO: use non-Yale-specific message.
-                return fail('You must use a valid @schoolname.edu email address.', 401)
+                return fail('You must use a valid .edu email address from a supported school.', 401)
 
             user = User(
                 name=payload['name'].strip(),
