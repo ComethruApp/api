@@ -246,16 +246,12 @@ class User(db.Model):
         return self.has_received_friend_request(user) or self.has_sent_friend_request(user)
 
     def feed(self):
-        my_closed_events = self.hosted.filter(
-            Event.open == False,
-        )
-        invited_closed_events = self.invited_to.filter(
-            Event.open == False,
-        )
+        my_closed_events = self.hosted.filter_by(open=False)
+        invited_closed_events = self.invited_to.filter_by(open=False)
         closed_events = my_closed_events.union(invited_closed_events)
-        open_events = Event.query.filter(
-            Event.open == True,
-            Event.school_id == self.school_id,
+        open_events = Event.query.filter_by(
+            open=True,
+            school_id=self.school_id
         )
         events = closed_events.union(open_events)
         # Filter out events that are over
