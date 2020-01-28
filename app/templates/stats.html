@@ -31,6 +31,6 @@ p {
     </head>
     <body>
         <h1>{{ users }}</h1>
-        <p>registered users ({{ users / 5964 }}% of Yale undergrads)</p>
+        <p>registered users ({{ (users / 5964 * 100) | round(2) }}% of Yale undergrads)</p>
     </body>
 </html>
