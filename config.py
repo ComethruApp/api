@@ -15,9 +15,22 @@ class Config(object):
 
     CONFIRMATION_TOKEN_EXPIRATION = 3600000
 
+    # Email sending with Mailgun
     MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
     MAILGUN_SENDER_NAME = 'Comethru'
     MAILGUN_SENDER = 'noreply@mail.comethru.io'
+
+    # Email sending with Gmail (fallback)
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_PORT = 465
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    # Authentication
+    MAIL_USERNAME = os.environ['APP_MAIL_USERNAME']
+    MAIL_PASSWORD = os.environ['APP_MAIL_PASSWORD']
+
+    # mail accounts
+    MAIL_DEFAULT_SENDER = 'hello@comethru.io'
 
     ONESIGNAL_API_KEY = os.environ['ONESIGNAL_API_KEY']
     ONESIGNAL_APP_ID = os.environ['ONESIGNAL_APP_ID']

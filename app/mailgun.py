@@ -10,3 +10,6 @@ def send_email(to, subject, html):
                                'to': [to],
                                'subject': subject,
                                'html': html})
+
+def send_email_gmail(to, subject, html):
+    return
