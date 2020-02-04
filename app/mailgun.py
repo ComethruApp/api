@@ -17,7 +17,7 @@ def send_email_gmail(to, subject, html):
     msg = Message(
         subject,
         recipients=[to],
-        html=template,
+        html=html,
         sender=app.config['MAIL_DEFAULT_SENDER']
     )
     mail.send(msg)
