@@ -1,5 +1,6 @@
 import requests
-from app import app
+from app import app, mail
+from flask_mail import Message
 
 
 def send_email(to, subject, html):
@@ -11,5 +12,12 @@ def send_email(to, subject, html):
                                'subject': subject,
                                'html': html})
 
+
 def send_email_gmail(to, subject, html):
-    return
+    msg = Message(
+        subject,
+        recipients=[to],
+        html=template,
+        sender=app.config['MAIL_DEFAULT_SENDER']
+    )
+    mail.send(msg)

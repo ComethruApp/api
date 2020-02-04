@@ -7,7 +7,7 @@ from itsdangerous.exc import SignatureExpired
 from app import app, db, bcrypt
 from app.models import User, School, BlacklistedToken
 from app.util import succ, fail
-from app.mailgun import send_email
+from app.mailgun import send_email, send_email_gmail
 
 
 auth = Blueprint('auth', __name__)
@@ -53,7 +53,10 @@ def send_confirmation_email(user):
     confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
     subject = '🌙 Verify your email for Comethru!'
     html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-    send_email(user.email, subject, html)
+    if user.school_id == 3:
+        send_email_gmail(user.email, subject, html)
+    else:
+        send_email(user.email, subject, html)
 
 
 @auth.route('/register', methods=['POST'])
@@ -137,7 +140,10 @@ def send_reset_password_email(user):
     url = url_for('auth.reset_password', token=token, _external=True)
     subject = '🌙 Reset your password on Comethru!'
     html = render_template('reset_password_email.html', name=user.name.split()[0], url=url)
-    send_email(user.email, subject, html)
+    if user.school_id == 3:
+        send_email_gmail(user.email, subject, html)
+    else:
+        send_email(user.email, subject, html)
 
 
 @auth.route('/reset_password_request', methods=['POST'])
