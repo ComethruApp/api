@@ -1,3 +1,4 @@
+import os
 import requests
 from base64 import b64decode
 
