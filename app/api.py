@@ -1,15 +1,19 @@
 from flask import Blueprint, jsonify, request, abort, g
+from werkzeug.utils import secure_filename
 from app import db
 from app.models import User, Event, School, Tag, Update, friendships, friend_requests
 from app.geography import attending
 from app.util import succ, fail
 from app.notifier import notifier
 from app.facebook import facebook
+from app.images import image_upload
+from io import BytesIO
 import datetime
 import os
 import json
 
 api = Blueprint('api', __name__)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
 @api.errorhandler(404)
@@ -85,6 +89,28 @@ def safety():
     with open('resources/safety.json', 'r') as f:
         numbers = json.load(f).get(str(g.me.school_id), {'Police or Fire Emergency': '911'})
     return jsonify(numbers)
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@api.route('/image', methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return fail('No file provided.')
+    file = request.files['file']
+    if file.filename == '':
+        return fail('No selected file.')
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        stream = BytesIO()
+        file.save(stream)
+        image_upload(stream)
+        return redirect(url_for('uploaded_file',
+                                filename=filename))
+    return succ('Image successfully uploaded.')
 
 
 #########
