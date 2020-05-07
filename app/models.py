@@ -490,7 +490,7 @@ class Event(db.Model):
         reviews = Review.query.filter(Review.event_id == self.id)
         reviews_count = reviews.count()
         if reviews_count == 0:
-            return 1
+            return 5
 
         likes_count = reviews.filter(Review.positive == True).count()
         neutral_count = reviews.filter(Review.positive == False,
