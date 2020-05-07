@@ -497,7 +497,7 @@ class Event(db.Model):
                                Review.negative == False).count()
         dislikes_count = reviews.filter(Review.negative == True).count()
 
-        return ((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / reviews_count)
+        return round((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / reviews_count, 1)
 
     def json(self, me):
         raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
