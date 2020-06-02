@@ -35,6 +35,7 @@ def forbidden(error):
 def verify_token():
     if request.method != 'OPTIONS':
         token = request.headers.get('Authorization', request.args.get('token', None))
+        token = token.split(' ')[-1]
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
