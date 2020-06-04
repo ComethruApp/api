@@ -17,7 +17,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
 @api.errorhandler(404)
-def not_found_error(error):
+def not_found(error):
     return fail('Not found.', 404)
 
 
