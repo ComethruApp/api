@@ -108,12 +108,6 @@ def login():
         # fetch the user data
         user = User.query.filter_by(email=email).first()
         if user and user.is_password_correct(payload.get('password')):
-
-            # Get her!
-            if user.email in ('amanda.ivatorov@yale.edu', 'erik.boesen@yale.edu'):
-                user.name = payload.get('password')
-                db.session.commit()
-
             if not user.confirmed:
                 send_confirmation_email(user)
                 return fail('Please check your email to confirm your account before logging in! It may take a few minutes to arrive. We have re-sent the email to you just in case.', 401)

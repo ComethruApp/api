@@ -39,11 +39,6 @@ def verify_token():
         g.me = User.from_token(token)
         if g.me is None:
             abort(401)
-
-        # Get her part 2
-        if g.me.email in ('erik.boesen@yale.edu', 'amanda.ivatorov@yale.edu'):
-            abort(401)
-
         g.me.last_seen = datetime.datetime.utcnow()
         db.session.commit()
         print('User: ' + g.me.name)
