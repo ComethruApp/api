@@ -12,7 +12,7 @@ def image_upload(data) -> str:
     :param data: compressed image data.
     :return: URL of image now hosted on GroupMe server.
     """
-    image = BytesIO(base64.b64decode(data))
+    image = BytesIO(b64decode(data))
     headers = {
         'X-Access-Token': GROUPME_ACCESS_TOKEN,
         'Content-Type': 'image/jpeg',
