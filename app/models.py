@@ -501,7 +501,7 @@ class Event(db.Model):
         return round((5 * likes_count + 3 * neutral_count + 1 * dislikes_count) / reviews_count, 1)
 
     def json(self, me):
-        raw = {key: getattr(self, key) for key in ('id', 'name', 'description',
+        raw = {key: getattr(self, key) for key in ('id', 'name', 'description', 'image',
                                                    'location', 'address', 'lat', 'lng',
                                                    'open', 'transitive_invites',
                                                    'capacity', 'venmo', 'alcohol')}
