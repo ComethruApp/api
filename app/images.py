@@ -1,6 +1,7 @@
 import os
 import requests
 from base64 import b64decode
+from io import BytesIO
 
 GROUPME_ACCESS_TOKEN = os.environ.get('GROUPME_ACCESS_TOKEN')
 
@@ -11,11 +12,12 @@ def image_upload(data) -> str:
     :param data: compressed image data.
     :return: URL of image now hosted on GroupMe server.
     """
+    image = BytesIO(base64.b64decode(data))
     headers = {
         'X-Access-Token': GROUPME_ACCESS_TOKEN,
         'Content-Type': 'image/jpeg',
     }
-    r = requests.post('https://image.groupme.com/pictures', data=data, headers=headers)
+    r = requests.post('https://image.groupme.com/pictures', data=image, headers=headers)
     print(r.json())
     url = r.json()['payload']['url']
     print('Image hosted on GroupMe: ' + url)
