@@ -381,6 +381,7 @@ class Event(db.Model):
     lng = db.Column(db.Float)
     address = db.Column(db.String(256), nullable=True)
 
+    image = db.Column(db.String(100))
     open = db.Column(db.Boolean, default=True)
     transitive_invites = db.Column(db.Boolean, default=False)
     capacity = db.Column(db.Integer)
@@ -414,8 +415,8 @@ class Event(db.Model):
             self.end_time = datetime.datetime.fromisoformat(raw_end_time)
             self.end_time = self.end_time.astimezone(datetime.timezone.utc)
         # TODO use set?
-        for field in ('name', 'description', 'location', 'lat', 'lng', 'address', 'open',
-                      'capacity', 'transitive_invites', 'venmo', 'alcohol'):
+        for field in ('name', 'description', 'location', 'lat', 'lng', 'address', 'image',
+                      'open', 'capacity', 'transitive_invites', 'venmo', 'alcohol'):
             if field in raw:
                 setattr(self, field, raw[field])
 
