@@ -99,19 +99,9 @@ def allowed_file(filename):
 
 @api.route('/image', methods=['POST'])
 def upload_image():
-    if 'file' not in request.files:
-        return fail('No file provided.')
-    file = request.files['file']
-    if file.filename == '':
-        return fail('No selected file.')
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        stream = BytesIO()
-        file.save(stream)
-        image_upload(stream)
-        return redirect(url_for('uploaded_file',
-                                filename=filename))
-    return succ('Image successfully uploaded.')
+    image = request.data
+    url = image_upload(image)
+    return jsonify({'url': url})
 
 
 #########
