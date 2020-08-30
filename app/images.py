@@ -16,6 +16,7 @@ def image_upload(data) -> str:
         'Content-Type': 'image/jpeg',
     }
     r = requests.post('https://image.groupme.com/pictures', data=data, headers=headers)
+    print(r.json())
     url = r.json()['payload']['url']
     print('Image hosted on GroupMe: ' + url)
     return url
