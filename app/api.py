@@ -99,9 +99,13 @@ def allowed_file(filename):
 
 @api.route('/image', methods=['POST'])
 def upload_image():
+    # DEBUG
+    return jsonify({'url': 'https://i.groupme.com/960x1280.jpeg.600552a2e9974977b67600d53f4175cf'})
+    """
     image = request.data
     url = image_upload(image)
     return jsonify({'url': url})
+    """
 
 
 #########
