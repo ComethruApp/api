@@ -12,8 +12,10 @@ def image_upload(data) -> str:
     :return: URL of image now hosted on GroupMe server.
     """
     headers = {
-        'X-Access-Token': ACCESS_TOKEN,
+        'X-Access-Token': GROUPME_ACCESS_TOKEN,
         'Content-Type': 'image/jpeg',
     }
     r = requests.post('https://image.groupme.com/pictures', data=data, headers=headers)
-    return r.json()['payload']['url']
+    url = r.json()['payload']['url']
+    print('Image hosted on GroupMe: ' + url)
+    return url
