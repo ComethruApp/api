@@ -35,5 +35,9 @@ if not app.debug:
     app.logger.info('App startup')
 
 from app import models, api, auth, views
-app.register_blueprint(api.api, url_prefix='/api')
+app.register_blueprint(api.api)
 app.register_blueprint(auth.auth, url_prefix='/auth')
+
+# Legacy compatibility
+# TODO: remove
+app.register_blueprint(api.api, url_prefix='/api')
