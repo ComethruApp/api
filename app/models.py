@@ -29,11 +29,6 @@ friend_requests = db.Table('friend_requests',
     db.Column('friended_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
 )
 
-invitations = db.Table('invitations',
-    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-)
-
 taggings = db.Table('taggings',
     db.Column('event_id', db.Integer, db.ForeignKey('events.id'), nullable=False),
     db.Column('tag_name', db.String, db.ForeignKey('tags.name'), nullable=False),
@@ -91,6 +86,7 @@ class User(db.Model):
         primaryjoin=(blocks.c.blocker_id == id),
         secondaryjoin=(blocks.c.blocked_id == id),
         backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
+    invited = db.relationship('Invitation', back_populates='user')
     updates = db.relationship('Update', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)
 
@@ -398,9 +394,7 @@ class Event(db.Model):
     hosts = db.relationship(
         'User', secondary=hostships,
         backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic')
-    invites = db.relationship(
-        'User', secondary=invitations,
-        backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
+    invitees = db.relationship('Invitation', back_populates='event')
     updates = db.relationship('Update', backref='event', lazy=True)
     reviews = db.relationship('Review', backref='event', lazy=True)
 
@@ -519,6 +513,15 @@ class Event(db.Model):
             'tags': [tag.name for tag in self.tags],
         })
         return raw
+
+
+class Invitation(db.Model):
+    __tablename__ = 'invitations'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    event = db.relationship('Event', back_populates='invitees')
+    user = db.relationship('User', back_populates='invited')
 
 
 class Tag(db.Model):
