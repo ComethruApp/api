@@ -9,6 +9,6 @@ Flask-Mail
 requests
 psycopg2
 gunicorn
-pyjwt
+pyjwt>=2.3.0
 facebook-sdk
 profanityfilter
