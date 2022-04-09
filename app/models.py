@@ -114,7 +114,7 @@ class User(db.Model):
             payload,
             app.config.get('SECRET_KEY'),
             algorithm='HS256'
-        ).decode(), payload['exp']
+        ), payload['exp']
 
     @staticmethod
     def from_token(token):
@@ -124,7 +124,7 @@ class User(db.Model):
         :return: User whose token this is, or None if token invalid/no user associated
         """
         try:
-            payload = jwt.decode(token, app.config.get('SECRET_KEY'))
+            payload = jwt.decode(token, app.config.get('SECRET_KEY'), algorithms=['HS256'])
             is_blacklisted = BlacklistedToken.check_blacklist(token)
             if is_blacklisted:
                 # Token was blacklisted following logout
