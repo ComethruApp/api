@@ -86,7 +86,7 @@ class User(db.Model):
         primaryjoin=(blocks.c.blocker_id == id),
         secondaryjoin=(blocks.c.blocked_id == id),
         backref=db.backref('blocked_by', lazy='dynamic'), lazy='dynamic')
-    invited = db.relationship('Invitation', back_populates='user')
+    invited_to = db.relationship('Event', secondary='invitations', backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
     updates = db.relationship('Update', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)
 
@@ -394,7 +394,7 @@ class Event(db.Model):
     hosts = db.relationship(
         'User', secondary=hostships,
         backref=db.backref('hosted', lazy='dynamic'), lazy='dynamic')
-    invitees = db.relationship('Invitation', back_populates='event')
+    #invitees = db.relationship('User', secondary='invitations', backref=db.backref('invited_to', lazy='dynamic'), lazy='dynamic')
     updates = db.relationship('Update', backref='event', lazy=True)
     reviews = db.relationship('Review', backref='event', lazy=True)
 
@@ -520,8 +520,6 @@ class Invitation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    event = db.relationship('Event', back_populates='invitees')
-    user = db.relationship('User', back_populates='invited')
 
 
 class Tag(db.Model):
