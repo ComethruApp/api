@@ -53,11 +53,10 @@ def send_confirmation_email(user):
     confirm_url = url_for('auth.confirm_email', token=confirmation_token, _external=True)
     subject = '🌙 Verify your email for Comethru!'
     html = render_template('confirm_email.html', name=user.name.split()[0], confirm_url=confirm_url)
-    if user.school_id == 3:
-        send_email_gmail(user.email, subject, html)
-    else:
+    if user.school_id == 2:
         send_email(user.email, subject, html)
-
+    else:
+        send_email_gmail(user.email, subject, html)
 
 @auth.route('/register', methods=['POST'])
 def register():
