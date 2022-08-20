@@ -44,7 +44,10 @@ def verify_token():
         g.me.last_seen = datetime.datetime.utcnow()
         db.session.commit()
         print('User: ' + g.me.name)
-        g.json = request.get_json()
+        try:
+            g.json = request.get_json()
+        except Exception as e:
+            g.json = None
 
 
 #################
